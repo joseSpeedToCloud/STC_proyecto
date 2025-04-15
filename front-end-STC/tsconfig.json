@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]        
+      }, 
+      "target": "es5", // Puedes seguir usando es5 como target
+      "lib": [
+        "dom",
+        "es2015"  // Añade es2015 para soporte de Promesas y async/await
+      ],  
+        "module": "ESNext",
+        "jsx": "react",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "strict": true,
+        "noImplicitAny": true
+    }
+  }
+  
+

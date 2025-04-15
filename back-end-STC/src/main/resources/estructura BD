@@ -1,0 +1,156 @@
+CREATE DATABASE cloud_resources;
+
+-- Creación de esquemas para cada proveedor de nube
+CREATE SCHEMA google_cloud;
+CREATE SCHEMA aws;
+CREATE SCHEMA azure;
+
+-- Esquema de Google Cloud
+SET search_path TO google_cloud;
+
+CREATE TABLE organizations (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE
+);
+CREATE TABLE projects (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    organization_id INTEGER REFERENCES organizations(id)
+);
+--para proyectos sin organizacion
+CREATE TABLE standalone_projects (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL
+);
+CREATE TABLE virtual_machines (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    project_id INTEGER REFERENCES projects(id),
+    standalone_project_id INTEGER REFERENCES standalone_projects(id),
+    machine_type VARCHAR(255),
+    zone VARCHAR(255),
+    status VARCHAR(50),
+    details JSONB,
+    CHECK (
+        (project_id IS NOT NULL AND standalone_project_id IS NULL) OR
+        (project_id IS NULL AND standalone_project_id IS NOT NULL)
+    )
+);
+CREATE TABLE disks (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    project_id INTEGER REFERENCES projects(id),
+    standalone_project_id INTEGER REFERENCES standalone_projects(id),
+    size_gb INTEGER,
+    type VARCHAR(50),
+    zone VARCHAR(255),
+    details JSONB,
+    CHECK (
+        (project_id IS NOT NULL AND standalone_project_id IS NULL) OR
+        (project_id IS NULL AND standalone_project_id IS NOT NULL)
+    )
+);
+
+-- Esquema AWS
+SET search_path TO aws;
+
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    account_id VARCHAR(50) NOT NULL UNIQUE
+);
+--para proyectos sin organizacion
+CREATE TABLE standalone_accounts (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    account_id VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE regions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+CREATE TABLE ec2_instances (
+    id SERIAL PRIMARY KEY,
+    instance_id VARCHAR(50) NOT NULL UNIQUE,
+    account_id INTEGER REFERENCES accounts(id),
+    standalone_account_id INTEGER REFERENCES standalone_accounts(id),
+    region_id INTEGER NOT NULL REFERENCES regions(id),
+    instance_type VARCHAR(50),
+    state VARCHAR(20),
+    details JSONB,
+    CHECK (
+        (account_id IS NOT NULL AND standalone_account_id IS NULL) OR
+        (account_id IS NULL AND standalone_account_id IS NOT NULL)
+    )
+);
+CREATE TABLE ebs_volumes (
+    id SERIAL PRIMARY KEY,
+    volume_id VARCHAR(50) NOT NULL UNIQUE,
+    account_id INTEGER REFERENCES accounts(id),
+    standalone_account_id INTEGER REFERENCES standalone_accounts(id),
+    region_id INTEGER NOT NULL REFERENCES regions(id),
+    size_gb INTEGER,
+    volume_type VARCHAR(20),
+    state VARCHAR(20),
+    details JSONB,
+    CHECK (
+        (account_id IS NOT NULL AND standalone_account_id IS NULL) OR
+        (account_id IS NULL AND standalone_account_id IS NOT NULL)
+    )
+);
+
+-- Esquema Azure
+SET search_path TO azure;
+
+CREATE TABLE subscriptions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    subscription_id UUID NOT NULL UNIQUE
+);
+--para proyectos sin organizacion
+CREATE TABLE standalone_subscriptions (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    subscription_id UUID NOT NULL UNIQUE
+);
+CREATE TABLE resource_groups (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    subscription_id INTEGER REFERENCES subscriptions(id),
+    standalone_subscription_id INTEGER REFERENCES standalone_subscriptions(id),
+    CHECK (
+        (subscription_id IS NOT NULL AND standalone_subscription_id IS NULL) OR
+        (subscription_id IS NULL AND standalone_subscription_id IS NOT NULL)
+    )
+);
+CREATE TABLE virtual_machines (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    resource_group_id INTEGER NOT NULL REFERENCES resource_groups(id),
+    vm_size VARCHAR(50),
+    location VARCHAR(50),
+    status VARCHAR(50),
+    details JSONB
+);
+CREATE TABLE disks (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    resource_group_id INTEGER NOT NULL REFERENCES resource_groups(id),
+    size_gb INTEGER,
+    sku VARCHAR(50),
+    location VARCHAR(50),
+    details JSONB
+);
+
+-- Crear un usuario con acceso a todos los esquemas
+CREATE USER cloud_app_user WITH PASSWORD 'your_secure_password';
+GRANT USAGE ON SCHEMA google_cloud, aws, azure TO cloud_app_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA google_cloud, aws, azure TO cloud_app_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA google_cloud, aws, azure TO cloud_app_user;
+
+-- Asegurar que los nuevos objetos hereden los mismos permisos
+ALTER DEFAULT PRIVILEGES IN SCHEMA google_cloud, aws, azure
+GRANT ALL ON TABLES TO cloud_app_user;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA google_cloud, aws, azure
+GRANT ALL ON SEQUENCES TO cloud_app_user;

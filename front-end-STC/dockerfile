@@ -1,0 +1,35 @@
+# Imagen base de Node.js para construir la aplicación
+FROM node:17-alpine3.15 as build
+
+# Establecer el directorio de trabajo dentro del contenedor
+WORKDIR /app
+
+# Copiar package.json y package-lock.json al contenedor
+COPY package*.json ./
+
+# Instalar dependencias de producción
+RUN npm install
+
+# Copiar todo el código fuente al contenedor
+COPY . .
+
+# Construir la aplicación en modo producción
+RUN npm run build
+
+# Imagen final para ejecutar el servidor
+FROM node:17-alpine3.15
+
+# Establecer el directorio de trabajo para la aplicación compilada
+WORKDIR /app
+
+# Copiar la aplicación compilada desde la etapa de construcción
+COPY --from=build /app/dist /app/dist
+
+# Instalar un servidor estático simple para servir los archivos
+RUN npm install -g serve
+
+# Exponer el puerto 4173
+EXPOSE 4173
+
+# Comando para iniciar el servidor
+CMD ["serve", "-s", "dist", "-l", "4173"]
