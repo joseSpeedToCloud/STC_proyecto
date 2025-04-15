@@ -49,8 +49,8 @@ const Login = () => {
       uppercase: !/[A-Z]/.test(password) ? "La contraseña debe contener al menos una letra mayúscula." : "",
       lowercase: !/[a-z]/.test(password) ? "La contraseña debe contener al menos una letra minúscula." : "",
       number: !/[0-9]/.test(password) ? "La contraseña debe contener al menos un número." : "",
-      specialChar: !new RegExp(`[${SPECIAL_CHARACTERS.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}]`).test(password) 
-        ? `La contraseña debe contener al menos un carácter especial: ${SPECIAL_CHARACTERS}` 
+      specialChar: !new RegExp(`[${SPECIAL_CHARACTERS.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}]`).test(password)
+        ? `La contraseña debe contener al menos un carácter especial: ${SPECIAL_CHARACTERS}`
         : ""
     };
 
@@ -60,14 +60,14 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitted(true);
-  
+
     setErrorMessages({ user: "", password: "" });
-  
+
     if (!user.trim()) {
-      setErrorMessages(prev => ({...prev, user: "Por favor, ingrese su nombre de usuario."}));
+      setErrorMessages(prev => ({ ...prev, user: "Por favor, ingrese su nombre de usuario." }));
       return;
     }
-  
+
     if (noUsers) {
       try {
         const response = await axios.post("http://localhost:8080/api/cloud/users", {
@@ -79,7 +79,7 @@ const Login = () => {
           email: "",
           department: ""
         });
-  
+
         if (response.status === 201) {
           setIsChangingPassword(true);
           console.log("Usuario registrado exitosamente. Cambio de contraseña requerido.");
@@ -87,7 +87,7 @@ const Login = () => {
       } catch (error) {
         console.error("Error al registrar usuario:", error.response);
         setErrorMessages(prev => ({
-          ...prev, 
+          ...prev,
           user: error.response?.data || "No se pudo conectar al servidor."
         }));
       }
@@ -97,14 +97,14 @@ const Login = () => {
           username: user,
           password: password,
         });
-  
+
         if (response.status === 200) {
           const { role, requirePasswordChange, username } = response.data;
-  
+
           //guardar en localStorage
           localStorage.setItem("userRole", role);
           localStorage.setItem("username", username);
-  
+
           if (requirePasswordChange) {
             setIsChangingPassword(true);
           } else {
@@ -114,42 +114,42 @@ const Login = () => {
         }
       } catch (error) {
         console.error("Error al iniciar sesión:", error.response);
-        setErrorMessages(prev => ({...prev, user: "Usuario o contraseña incorrectos."}));
+        setErrorMessages(prev => ({ ...prev, user: "Usuario o contraseña incorrectos." }));
       }
     }
   };
-  
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setFormSubmitted(true);
-  
+
     setErrorMessages({ user: "", password: "" });
-  
+
     if (newPassword !== confirmPassword) {
-      setErrorMessages(prev => ({...prev, password: "Las contraseñas no coinciden"}));
+      setErrorMessages(prev => ({ ...prev, password: "Las contraseñas no coinciden" }));
       return;
     }
-  
+
     const passwordErrors = validarPassword(newPassword);
     const combinedPasswordErrors = Object.values(passwordErrors).filter(msg => msg).join(" ");
-    
+
     if (combinedPasswordErrors) {
-      setErrorMessages(prev => ({...prev, password: combinedPasswordErrors}));
+      setErrorMessages(prev => ({ ...prev, password: combinedPasswordErrors }));
       return;
     }
-  
+
     try {
       const response = await axios.put(
         `http://localhost:8080/api/cloud/users/${user}/change-password`,
         { newPassword: newPassword }
       );
-  
+
       if (response.status === 200) {
         //recuperar información del usuario después de cambiar la contraseña
         const userResponse = await axios.get(
           `http://localhost:8080/api/cloud/users/${user}`
         );
-  
+
         if (userResponse.status === 200) {
           const { rol, username } = userResponse.data;
           localStorage.setItem("userRole", rol);
@@ -163,11 +163,11 @@ const Login = () => {
       }
     } catch (error) {
       setErrorMessages(prev => ({
-        ...prev, 
+        ...prev,
         password: error.response?.data || "Error al cambiar la contraseña."
       }));
     }
-  };    
+  };
 
   const ErrorMessageBox = ({ message }) => (
     message ? (
@@ -195,30 +195,55 @@ const Login = () => {
           >
             <div className="flex flex-col space-y-5">
               <h2 className="font-bold">Cambio de contraseña requerido</h2>
-              <input
-                className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
-                type={showNewPassword ? "text" : "password"}
-                value={newPassword}
-                placeholder="Nueva contraseña"
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-              <input
-                className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
-                type={showNewPassword ? "text" : "password"}
-                value={confirmPassword}
-                placeholder="Confirmar contraseña"
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
+
+              {/* Nueva contraseña con botón Show/Hide */}
+              <div className="relative">
+                <input
+                  className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  placeholder="Nueva contraseña"
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-[#0B6A8D] hover:text-[#357D9E]"
+                  onClick={() => setShowNewPassword(prev => !prev)}
+                >
+                  {showNewPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              {/* Confirmar contraseña con mismo botón */}
+              <div className="relative">
+                <input
+                  className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
+                  type={showNewPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  placeholder="Confirmar contraseña"
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-[#0B6A8D] hover:text-[#357D9E]"
+                  onClick={() => setShowNewPassword(prev => !prev)}
+                >
+                  {showNewPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+
               <button
                 type="submit"
                 className="py-[10px] px-6 mt-4 font-bold text-white bg-[#3F9BB9] rounded-md"
               >
                 Cambiar contraseña
               </button>
+
               {formSubmitted && errorMessages.password && (
                 <ErrorMessageBox message={errorMessages.password} />
               )}
             </div>
+
           </form>
         ) : (
           <form
@@ -236,24 +261,38 @@ const Login = () => {
                 onChange={(e) => setUser(e.target.value)}
                 disabled={noUsers}
               />
-              <input
-                className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
-                type={showPassword ? "text" : "password"}
-                value={noUsers ? "Stc20@" : password}
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={noUsers}
-              />
+
+              {/* Input de contraseña con botón para mostrar/ocultar */}
+              <div className="relative">
+                <input
+                  className="py-[10px] px-4 border border-gray-300 rounded-md text-gray-700 w-full"
+                  type={showPassword ? "text" : "password"}
+                  value={noUsers ? "Stc20@" : password}
+                  placeholder="Password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={noUsers}
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-[#0B6A8D] hover:text-[#357D9E]"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
+
               <button
                 type="submit"
                 className="w-full py-[10px] mt-4 font-bold text-white bg-[#3F9BB9] rounded-md hover:bg-[#357D9E] transition duration-300"
               >
                 {noUsers ? "Registrar" : "Iniciar sesión"}
               </button>
+
               {formSubmitted && (errorMessages.user || errorMessages.password) && (
                 <ErrorMessageBox message={errorMessages.user || errorMessages.password} />
               )}
             </div>
+
           </form>
         )}
       </div>

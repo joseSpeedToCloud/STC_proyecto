@@ -13,95 +13,147 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SyncAccountAWSLaxyImport } from './routes/SyncAccountAWS.laxy'
 
 // Create Virtual Routes
 
-// Google Cloud Routes
-const DisksgoogleLazyImport = createFileRoute('/disksgoogle')()
-const FirewallsgoogleLazyImport = createFileRoute('/firewallsgoogle')()
-const GoogleAuthLazyImport = createFileRoute('/googleAuth')()
-const HomegcpLazyImport = createFileRoute('/homegcp')()
-const LoadbalancersgoogleLazyImport = createFileRoute('/loadbalancersgoogle')()
-const NetworksgoogleLazyImport = createFileRoute('/networksgoogle')()
+const VpnsgoogleLazyImport = createFileRoute('/vpnsgoogle')()
+const VpnsazureLazyImport = createFileRoute('/vpnsazure')()
+const VirtualmachinesgoogleLazyImport = createFileRoute(
+  '/virtualmachinesgoogle',
+)()
+const VirtualmachinesazureLazyImport = createFileRoute(
+  '/virtualmachinesazure',
+)()
+const UsersLazyImport = createFileRoute('/users')()
+const SyncazuresubscriptionLazyImport = createFileRoute(
+  '/syncazuresubscription',
+)()
+const SyncProjectLazyImport = createFileRoute('/syncProject')()
+const SubscriptionsazureLazyImport = createFileRoute('/subscriptionsazure')()
+const SubscripriondetailsazureLazyImport = createFileRoute(
+  '/subscripriondetailsazure',
+)()
+const SubnetworksazureLazyImport = createFileRoute('/subnetworksazure')()
+const SnapshotsgoogleLazyImport = createFileRoute('/snapshotsgoogle')()
+const SnapshotsazureLazyImport = createFileRoute('/snapshotsazure')()
+const SettingsLazyImport = createFileRoute('/settings')()
 const ProjectsgoogleLazyImport = createFileRoute('/projectsgoogle')()
 const ProjectsDetailsLazyImport = createFileRoute('/projectsDetails')()
-const RoutesgoogleGoogleroutesLazyImport = createFileRoute('/routes_google/google_routes')()
-const SnapshotsgoogleLazyImport = createFileRoute('/snapshotsgoogle')()
-const SyncProjectLazyImport = createFileRoute('/syncProject')()
-const VirtualmachinesgoogleLazyImport = createFileRoute('/virtualmachinesgoogle')()
-const VpnsgoogleLazyImport = createFileRoute('/vpnsgoogle')()
-
-// Azure Routes
-const AksclusterazureLazyImport = createFileRoute('/aksclusterazure')()
-const AzureauthLazyImport = createFileRoute('/azureauth')()
-const DisksazureLazyImport = createFileRoute('/disksazure')()
-const HomeazureLazyImport = createFileRoute('/homeazure')()
-const LoadbalancersazureLazyImport = createFileRoute('/loadbalancersazure')()
-const LoginAzureLazyImport = createFileRoute('/LoginAzure')()
+const NetworkssecurityazureLazyImport = createFileRoute(
+  '/networkssecurityazure',
+)()
+const NetworksgoogleLazyImport = createFileRoute('/networksgoogle')()
 const NetworksazureLazyImport = createFileRoute('/networksazure')()
-const NetworkssecurityazureLazyImport = createFileRoute('/networkssecurityazure')()
-const RoutesazureAzureroutesLazyImport = createFileRoute('/routes_azure/azure_routes')()
-const SnapshotsazureLazyImport = createFileRoute('/snapshotsazure')()
-const SubnetworksazureLazyImport = createFileRoute('/subnetworksazure')()
-const SubscripriondetailsazureLazyImport = createFileRoute('/subscripriondetailsazure')()
-const SubscriptionsazureLazyImport = createFileRoute('/subscriptionsazure')()
-const SyncazuresubscriptionLazyImport = createFileRoute('/syncazuresubscription')()
-const VirtualmachinesazureLazyImport = createFileRoute('/virtualmachinesazure')()
-const VpnsazureLazyImport = createFileRoute('/vpnsazure')()
-
-// AWS Routes
-const AmazonLazyImport = createFileRoute('/amazon')()
-const HomeAWSLazyImport = createFileRoute('/homeAWS')()
-const LoginAWSLazyImport = createFileRoute('/LoginAWS')()
-const SyncAccountAWSLazyImport = createFileRoute('/SyncAccountAWS')()
-
-// General Routes
-const CreateUserLazyImport = createFileRoute('/createUser')()
-const HomeLazyImport = createFileRoute('/home')()
-const IndexLazyImport = createFileRoute('/')()
-const LanguagesLazyImport = createFileRoute('/languages')()
 const LoginTokenLazyImport = createFileRoute('/loginToken')()
-const SettingsLazyImport = createFileRoute('/settings')()
-const UsersLazyImport = createFileRoute('/users')()
+const LoadbalancersgoogleLazyImport = createFileRoute('/loadbalancersgoogle')()
+const LoadbalancersazureLazyImport = createFileRoute('/loadbalancersazure')()
+const LanguagesLazyImport = createFileRoute('/languages')()
+const HomegcpLazyImport = createFileRoute('/homegcp')()
+const HomeazureLazyImport = createFileRoute('/homeazure')()
+const HomeAWSLazyImport = createFileRoute('/homeAWS')()
+const HomeLazyImport = createFileRoute('/home')()
+const GoogleAuthLazyImport = createFileRoute('/googleAuth')()
+const FirewallsgoogleLazyImport = createFileRoute('/firewallsgoogle')()
+const DisksgoogleLazyImport = createFileRoute('/disksgoogle')()
+const DisksazureLazyImport = createFileRoute('/disksazure')()
+const CreateUserLazyImport = createFileRoute('/createUser')()
+const AzureauthLazyImport = createFileRoute('/azureauth')()
+const AmazonLazyImport = createFileRoute('/amazon')()
+const AksclusterazureLazyImport = createFileRoute('/aksclusterazure')()
+const LoginAzureLazyImport = createFileRoute('/LoginAzure')()
+const LoginAWSLazyImport = createFileRoute('/LoginAWS')()
+const IndexLazyImport = createFileRoute('/')()
+const RoutesgoogleGoogleroutesLazyImport = createFileRoute(
+  '/routes_google/google_routes',
+)()
+const RoutesazureAzureroutesLazyImport = createFileRoute(
+  '/routes_azure/azure_routes',
+)()
 
 // Create/Update Routes
 
-// Google Cloud Routes
-const DisksgoogleLazyRoute = DisksgoogleLazyImport.update({
-  path: '/disksgoogle',
+const VpnsgoogleLazyRoute = VpnsgoogleLazyImport.update({
+  path: '/vpnsgoogle',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/disksgoogle.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/vpnsgoogle.lazy').then((d) => d.Route))
 
-const FirewallsgoogleLazyRoute = FirewallsgoogleLazyImport.update({
-  path: '/firewallsgoogle',
+const VpnsazureLazyRoute = VpnsazureLazyImport.update({
+  path: '/vpnsazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/vpnsazure.lazy').then((d) => d.Route))
+
+const VirtualmachinesgoogleLazyRoute = VirtualmachinesgoogleLazyImport.update({
+  path: '/virtualmachinesgoogle',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/firewallsgoogle.lazy').then((d) => d.Route),
+  import('./routes/virtualmachinesgoogle.lazy').then((d) => d.Route),
 )
 
-const GoogleAuthLazyRoute = GoogleAuthLazyImport.update({
-  path: '/googleAuth',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/googleAuth.lazy').then((d) => d.Route))
-
-const HomegcpLazyRoute = HomegcpLazyImport.update({
-  path: '/homegcp',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/homegcp.lazy').then((d) => d.Route))
-
-const LoadbalancersgoogleLazyRoute = LoadbalancersgoogleLazyImport.update({
-  path: '/loadbalancersgoogle',
+const VirtualmachinesazureLazyRoute = VirtualmachinesazureLazyImport.update({
+  path: '/virtualmachinesazure',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/loadbalancersgoogle.lazy').then((d) => d.Route),
+  import('./routes/virtualmachinesazure.lazy').then((d) => d.Route),
 )
 
-const NetworksgoogleLazyRoute = NetworksgoogleLazyImport.update({
-  path: '/networksgoogle',
+const UsersLazyRoute = UsersLazyImport.update({
+  path: '/users',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/users.lazy').then((d) => d.Route))
+
+const SyncazuresubscriptionLazyRoute = SyncazuresubscriptionLazyImport.update({
+  path: '/syncazuresubscription',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/networksgoogle.lazy').then((d) => d.Route),
+  import('./routes/syncazuresubscription.lazy').then((d) => d.Route),
 )
+
+const SyncProjectLazyRoute = SyncProjectLazyImport.update({
+  path: '/syncProject',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/syncProject.lazy').then((d) => d.Route))
+
+const SubscriptionsazureLazyRoute = SubscriptionsazureLazyImport.update({
+  path: '/subscriptionsazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/subscriptionsazure.lazy').then((d) => d.Route),
+)
+
+const SubscripriondetailsazureLazyRoute =
+  SubscripriondetailsazureLazyImport.update({
+    path: '/subscripriondetailsazure',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import('./routes/subscripriondetailsazure.lazy').then((d) => d.Route),
+  )
+
+const SubnetworksazureLazyRoute = SubnetworksazureLazyImport.update({
+  path: '/subnetworksazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/subnetworksazure.lazy').then((d) => d.Route),
+)
+
+const SnapshotsgoogleLazyRoute = SnapshotsgoogleLazyImport.update({
+  path: '/snapshotsgoogle',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/snapshotsgoogle.lazy').then((d) => d.Route),
+)
+
+const SnapshotsazureLazyRoute = SnapshotsazureLazyImport.update({
+  path: '/snapshotsazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/snapshotsazure.lazy').then((d) => d.Route),
+)
+
+const SettingsLazyRoute = SettingsLazyImport.update({
+  path: '/settings',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
 
 const ProjectsgoogleLazyRoute = ProjectsgoogleLazyImport.update({
   path: '/projectsgoogle',
@@ -117,60 +169,36 @@ const ProjectsDetailsLazyRoute = ProjectsDetailsLazyImport.update({
   import('./routes/projectsDetails.lazy').then((d) => d.Route),
 )
 
-const RoutesgoogleGoogleroutesLazyRoute =
-  RoutesgoogleGoogleroutesLazyImport.update({
-    path: '/routes_google/google_routes',
-    getParentRoute: () => rootRoute,
-  } as any).lazy(() =>
-    import('./routes/routes_google/google_routes.lazy').then((d) => d.Route),
-  )
-
-const SnapshotsgoogleLazyRoute = SnapshotsgoogleLazyImport.update({
-  path: '/snapshotsgoogle',
+const NetworkssecurityazureLazyRoute = NetworkssecurityazureLazyImport.update({
+  path: '/networkssecurityazure',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/snapshotsgoogle.lazy').then((d) => d.Route),
+  import('./routes/networkssecurityazure.lazy').then((d) => d.Route),
 )
 
-const SyncProjectLazyRoute = SyncProjectLazyImport.update({
-  path: '/syncProject',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/syncProject.lazy').then((d) => d.Route))
-
-const VirtualmachinesgoogleLazyRoute = VirtualmachinesgoogleLazyImport.update({
-  path: '/virtualmachinesgoogle',
+const NetworksgoogleLazyRoute = NetworksgoogleLazyImport.update({
+  path: '/networksgoogle',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/virtualmachinesgoogle.lazy').then((d) => d.Route),
+  import('./routes/networksgoogle.lazy').then((d) => d.Route),
 )
 
-const VpnsgoogleLazyRoute = VpnsgoogleLazyImport.update({
-  path: '/vpnsgoogle',
+const NetworksazureLazyRoute = NetworksazureLazyImport.update({
+  path: '/networksazure',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/vpnsgoogle.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/networksazure.lazy').then((d) => d.Route))
 
-// Azure Routes
-const AksclusterazureLazyRoute = AksclusterazureLazyImport.update({
-  path: '/aksclusterazure',
+const LoginTokenLazyRoute = LoginTokenLazyImport.update({
+  path: '/loginToken',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/loginToken.lazy').then((d) => d.Route))
+
+const LoadbalancersgoogleLazyRoute = LoadbalancersgoogleLazyImport.update({
+  path: '/loadbalancersgoogle',
   getParentRoute: () => rootRoute,
 } as any).lazy(() =>
-  import('./routes/aksclusterazure.lazy').then((d) => d.Route),
+  import('./routes/loadbalancersgoogle.lazy').then((d) => d.Route),
 )
-
-const AzureauthLazyRoute = AzureauthLazyImport.update({
-  path: '/azureauth',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/azureauth.lazy').then((d) => d.Route))
-
-const DisksazureLazyRoute = DisksazureLazyImport.update({
-  path: '/disksazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/disksazure.lazy').then((d) => d.Route))
-
-const HomeazureLazyRoute = HomeazureLazyImport.update({
-  path: '/homeazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/homeazure.lazy').then((d) => d.Route))
 
 const LoadbalancersazureLazyRoute = LoadbalancersazureLazyImport.update({
   path: '/loadbalancersazure',
@@ -179,22 +207,97 @@ const LoadbalancersazureLazyRoute = LoadbalancersazureLazyImport.update({
   import('./routes/loadbalancersazure.lazy').then((d) => d.Route),
 )
 
+const LanguagesLazyRoute = LanguagesLazyImport.update({
+  path: '/languages',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/languages.lazy').then((d) => d.Route))
+
+const HomegcpLazyRoute = HomegcpLazyImport.update({
+  path: '/homegcp',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/homegcp.lazy').then((d) => d.Route))
+
+const HomeazureLazyRoute = HomeazureLazyImport.update({
+  path: '/homeazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/homeazure.lazy').then((d) => d.Route))
+
+const HomeAWSLazyRoute = HomeAWSLazyImport.update({
+  path: '/homeAWS',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/homeAWS.lazy').then((d) => d.Route))
+
+const HomeLazyRoute = HomeLazyImport.update({
+  path: '/home',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/home.lazy').then((d) => d.Route))
+
+const GoogleAuthLazyRoute = GoogleAuthLazyImport.update({
+  path: '/googleAuth',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/googleAuth.lazy').then((d) => d.Route))
+
+const FirewallsgoogleLazyRoute = FirewallsgoogleLazyImport.update({
+  path: '/firewallsgoogle',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/firewallsgoogle.lazy').then((d) => d.Route),
+)
+
+const DisksgoogleLazyRoute = DisksgoogleLazyImport.update({
+  path: '/disksgoogle',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/disksgoogle.lazy').then((d) => d.Route))
+
+const DisksazureLazyRoute = DisksazureLazyImport.update({
+  path: '/disksazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/disksazure.lazy').then((d) => d.Route))
+
+const CreateUserLazyRoute = CreateUserLazyImport.update({
+  path: '/createUser',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/createUser.lazy').then((d) => d.Route))
+
+const AzureauthLazyRoute = AzureauthLazyImport.update({
+  path: '/azureauth',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/azureauth.lazy').then((d) => d.Route))
+
+const AmazonLazyRoute = AmazonLazyImport.update({
+  path: '/amazon',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/amazon.lazy').then((d) => d.Route))
+
+const AksclusterazureLazyRoute = AksclusterazureLazyImport.update({
+  path: '/aksclusterazure',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() =>
+  import('./routes/aksclusterazure.lazy').then((d) => d.Route),
+)
+
 const LoginAzureLazyRoute = LoginAzureLazyImport.update({
   path: '/LoginAzure',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/LoginAzure.lazy').then((d) => d.Route))
 
-const NetworksazureLazyRoute = NetworksazureLazyImport.update({
-  path: '/networksazure',
+const LoginAWSLazyRoute = LoginAWSLazyImport.update({
+  path: '/LoginAWS',
   getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/networksazure.lazy').then((d) => d.Route))
+} as any).lazy(() => import('./routes/LoginAWS.lazy').then((d) => d.Route))
 
-const NetworkssecurityazureLazyRoute = NetworkssecurityazureLazyImport.update({
-  path: '/networkssecurityazure',
+const IndexLazyRoute = IndexLazyImport.update({
+  path: '/',
   getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/networkssecurityazure.lazy').then((d) => d.Route),
-)
+} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
+
+const RoutesgoogleGoogleroutesLazyRoute =
+  RoutesgoogleGoogleroutesLazyImport.update({
+    path: '/routes_google/google_routes',
+    getParentRoute: () => rootRoute,
+  } as any).lazy(() =>
+    import('./routes/routes_google/google_routes.lazy').then((d) => d.Route),
+  )
 
 const RoutesazureAzureroutesLazyRoute = RoutesazureAzureroutesLazyImport.update(
   {
@@ -205,110 +308,10 @@ const RoutesazureAzureroutesLazyRoute = RoutesazureAzureroutesLazyImport.update(
   import('./routes/routes_azure/azure_routes.lazy').then((d) => d.Route),
 )
 
-const SnapshotsazureLazyRoute = SnapshotsazureLazyImport.update({
-  path: '/snapshotsazure',
+const SyncAccountAWSLaxyRoute = SyncAccountAWSLaxyImport.update({
+  path: '/SyncAccountAWS/laxy',
   getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/snapshotsazure.lazy').then((d) => d.Route),
-)
-
-const SubnetworksazureLazyRoute = SubnetworksazureLazyImport.update({
-  path: '/subnetworksazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/subnetworksazure.lazy').then((d) => d.Route),
-)
-
-const SubscripriondetailsazureLazyRoute =
-  SubscripriondetailsazureLazyImport.update({
-    path: '/subscripriondetailsazure',
-    getParentRoute: () => rootRoute,
-  } as any).lazy(() =>
-    import('./routes/subscripriondetailsazure.lazy').then((d) => d.Route),
-  )
-
-const SubscriptionsazureLazyRoute = SubscriptionsazureLazyImport.update({
-  path: '/subscriptionsazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/subscriptionsazure.lazy').then((d) => d.Route),
-)
-
-const SyncazuresubscriptionLazyRoute = SyncazuresubscriptionLazyImport.update({
-  path: '/syncazuresubscription',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/syncazuresubscription.lazy').then((d) => d.Route),
-)
-
-const VirtualmachinesazureLazyRoute = VirtualmachinesazureLazyImport.update({
-  path: '/virtualmachinesazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() =>
-  import('./routes/virtualmachinesazure.lazy').then((d) => d.Route),
-)
-
-const VpnsazureLazyRoute = VpnsazureLazyImport.update({
-  path: '/vpnsazure',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/vpnsazure.lazy').then((d) => d.Route))
-
-// AWS Routes
-const AmazonLazyRoute = AmazonLazyImport.update({
-  path: '/amazon',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/amazon.lazy').then((d) => d.Route))
-
-const HomeAWSLazyRoute = HomeAWSLazyImport.update({
-  path: '/homeAWS',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/homeAWS.lazy').then((d) => d.Route))
-
-const LoginAWSLazyRoute = LoginAWSLazyImport.update({
-  path: '/LoginAWS',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/LoginAWS.lazy').then((d) => d.Route))
-
-const SyncAccountAWSLazyRoute = SyncAccountAWSLazyImport.update({
-  path: '/SyncAccountAWS',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/SyncAccountAWS.lazy').then((d) => d.Route))
-
-// General Routes
-const CreateUserLazyRoute = CreateUserLazyImport.update({
-  path: '/createUser',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/createUser.lazy').then((d) => d.Route))
-
-const HomeLazyRoute = HomeLazyImport.update({
-  path: '/home',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/home.lazy').then((d) => d.Route))
-
-const IndexLazyRoute = IndexLazyImport.update({
-  path: '/',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
-
-const LanguagesLazyRoute = LanguagesLazyImport.update({
-  path: '/languages',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/languages.lazy').then((d) => d.Route))
-
-const LoginTokenLazyRoute = LoginTokenLazyImport.update({
-  path: '/loginToken',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/loginToken.lazy').then((d) => d.Route))
-
-const SettingsLazyRoute = SettingsLazyImport.update({
-  path: '/settings',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/settings.lazy').then((d) => d.Route))
-
-const UsersLazyRoute = UsersLazyImport.update({
-  path: '/users',
-  getParentRoute: () => rootRoute,
-} as any).lazy(() => import('./routes/users.lazy').then((d) => d.Route))
+} as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -321,7 +324,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexLazyImport
       parentRoute: typeof rootRoute
     }
-    // Google Cloud Routes
+    '/LoginAWS': {
+      id: '/LoginAWS'
+      path: '/LoginAWS'
+      fullPath: '/LoginAWS'
+      preLoaderRoute: typeof LoginAWSLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/LoginAzure': {
+      id: '/LoginAzure'
+      path: '/LoginAzure'
+      fullPath: '/LoginAzure'
+      preLoaderRoute: typeof LoginAzureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/aksclusterazure': {
+      id: '/aksclusterazure'
+      path: '/aksclusterazure'
+      fullPath: '/aksclusterazure'
+      preLoaderRoute: typeof AksclusterazureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/amazon': {
+      id: '/amazon'
+      path: '/amazon'
+      fullPath: '/amazon'
+      preLoaderRoute: typeof AmazonLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/azureauth': {
+      id: '/azureauth'
+      path: '/azureauth'
+      fullPath: '/azureauth'
+      preLoaderRoute: typeof AzureauthLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/createUser': {
+      id: '/createUser'
+      path: '/createUser'
+      fullPath: '/createUser'
+      preLoaderRoute: typeof CreateUserLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/disksazure': {
+      id: '/disksazure'
+      path: '/disksazure'
+      fullPath: '/disksazure'
+      preLoaderRoute: typeof DisksazureLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/disksgoogle': {
       id: '/disksgoogle'
       path: '/disksgoogle'
@@ -343,96 +394,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GoogleAuthLazyImport
       parentRoute: typeof rootRoute
     }
-    '/homegcp': {
-      id: '/homegcp'
-      path: '/homegcp'
-      fullPath: '/homegcp'
-      preLoaderRoute: typeof HomegcpLazyImport
+    '/home': {
+      id: '/home'
+      path: '/home'
+      fullPath: '/home'
+      preLoaderRoute: typeof HomeLazyImport
       parentRoute: typeof rootRoute
     }
-    '/loadbalancersgoogle': {
-      id: '/loadbalancersgoogle'
-      path: '/loadbalancersgoogle'
-      fullPath: '/loadbalancersgoogle'
-      preLoaderRoute: typeof LoadbalancersgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/networksgoogle': {
-      id: '/networksgoogle'
-      path: '/networksgoogle'
-      fullPath: '/networksgoogle'
-      preLoaderRoute: typeof NetworksgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/projectsgoogle': {
-      id: '/projectsgoogle'
-      path: '/projectsgoogle'
-      fullPath: '/projectsgoogle'
-      preLoaderRoute: typeof ProjectsgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/projectsDetails': {
-      id: '/projectsDetails'
-      path: '/projectsDetails'
-      fullPath: '/projectsDetails'
-      preLoaderRoute: typeof ProjectsDetailsLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/routes_google/google_routes': {
-      id: '/routes_google/google_routes'
-      path: '/routes_google/google_routes'
-      fullPath: '/routes_google/google_routes'
-      preLoaderRoute: typeof RoutesgoogleGoogleroutesLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/snapshotsgoogle': {
-      id: '/snapshotsgoogle'
-      path: '/snapshotsgoogle'
-      fullPath: '/snapshotsgoogle'
-      preLoaderRoute: typeof SnapshotsgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/syncProject': {
-      id: '/syncProject'
-      path: '/syncProject'
-      fullPath: '/syncProject'
-      preLoaderRoute: typeof SyncProjectLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/virtualmachinesgoogle': {
-      id: '/virtualmachinesgoogle'
-      path: '/virtualmachinesgoogle'
-      fullPath: '/virtualmachinesgoogle'
-      preLoaderRoute: typeof VirtualmachinesgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/vpnsgoogle': {
-      id: '/vpnsgoogle'
-      path: '/vpnsgoogle'
-      fullPath: '/vpnsgoogle'
-      preLoaderRoute: typeof VpnsgoogleLazyImport
-      parentRoute: typeof rootRoute
-    }
-    // Azure Routes
-    '/aksclusterazure': {
-      id: '/aksclusterazure'
-      path: '/aksclusterazure'
-      fullPath: '/aksclusterazure'
-      preLoaderRoute: typeof AksclusterazureLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/azureauth': {
-      id: '/azureauth'
-      path: '/azureauth'
-      fullPath: '/azureauth'
-      preLoaderRoute: typeof AzureauthLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/disksazure': {
-      id: '/disksazure'
-      path: '/disksazure'
-      fullPath: '/disksazure'
-      preLoaderRoute: typeof DisksazureLazyImport
+    '/homeAWS': {
+      id: '/homeAWS'
+      path: '/homeAWS'
+      fullPath: '/homeAWS'
+      preLoaderRoute: typeof HomeAWSLazyImport
       parentRoute: typeof rootRoute
     }
     '/homeazure': {
@@ -442,6 +415,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HomeazureLazyImport
       parentRoute: typeof rootRoute
     }
+    '/homegcp': {
+      id: '/homegcp'
+      path: '/homegcp'
+      fullPath: '/homegcp'
+      preLoaderRoute: typeof HomegcpLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/languages': {
+      id: '/languages'
+      path: '/languages'
+      fullPath: '/languages'
+      preLoaderRoute: typeof LanguagesLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/loadbalancersazure': {
       id: '/loadbalancersazure'
       path: '/loadbalancersazure'
@@ -449,11 +436,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoadbalancersazureLazyImport
       parentRoute: typeof rootRoute
     }
-    '/LoginAzure': {
-      id: '/LoginAzure'
-      path: '/LoginAzure'
-      fullPath: '/LoginAzure'
-      preLoaderRoute: typeof LoginAzureLazyImport
+    '/loadbalancersgoogle': {
+      id: '/loadbalancersgoogle'
+      path: '/loadbalancersgoogle'
+      fullPath: '/loadbalancersgoogle'
+      preLoaderRoute: typeof LoadbalancersgoogleLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/loginToken': {
+      id: '/loginToken'
+      path: '/loginToken'
+      fullPath: '/loginToken'
+      preLoaderRoute: typeof LoginTokenLazyImport
       parentRoute: typeof rootRoute
     }
     '/networksazure': {
@@ -463,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NetworksazureLazyImport
       parentRoute: typeof rootRoute
     }
+    '/networksgoogle': {
+      id: '/networksgoogle'
+      path: '/networksgoogle'
+      fullPath: '/networksgoogle'
+      preLoaderRoute: typeof NetworksgoogleLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/networkssecurityazure': {
       id: '/networkssecurityazure'
       path: '/networkssecurityazure'
@@ -470,11 +471,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NetworkssecurityazureLazyImport
       parentRoute: typeof rootRoute
     }
-    '/routes_azure/azure_routes': {
-      id: '/routes_azure/azure_routes'
-      path: '/routes_azure/azure_routes'
-      fullPath: '/routes_azure/azure_routes'
-      preLoaderRoute: typeof RoutesazureAzureroutesLazyImport
+    '/projectsDetails': {
+      id: '/projectsDetails'
+      path: '/projectsDetails'
+      fullPath: '/projectsDetails'
+      preLoaderRoute: typeof ProjectsDetailsLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/projectsgoogle': {
+      id: '/projectsgoogle'
+      path: '/projectsgoogle'
+      fullPath: '/projectsgoogle'
+      preLoaderRoute: typeof ProjectsgoogleLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsLazyImport
       parentRoute: typeof rootRoute
     }
     '/snapshotsazure': {
@@ -482,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/snapshotsazure'
       fullPath: '/snapshotsazure'
       preLoaderRoute: typeof SnapshotsazureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/snapshotsgoogle': {
+      id: '/snapshotsgoogle'
+      path: '/snapshotsgoogle'
+      fullPath: '/snapshotsgoogle'
+      preLoaderRoute: typeof SnapshotsgoogleLazyImport
       parentRoute: typeof rootRoute
     }
     '/subnetworksazure': {
@@ -505,90 +527,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SubscriptionsazureLazyImport
       parentRoute: typeof rootRoute
     }
+    '/syncProject': {
+      id: '/syncProject'
+      path: '/syncProject'
+      fullPath: '/syncProject'
+      preLoaderRoute: typeof SyncProjectLazyImport
+      parentRoute: typeof rootRoute
+    }
     '/syncazuresubscription': {
       id: '/syncazuresubscription'
       path: '/syncazuresubscription'
       fullPath: '/syncazuresubscription'
       preLoaderRoute: typeof SyncazuresubscriptionLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/virtualmachinesazure': {
-      id: '/virtualmachinesazure'
-      path: '/virtualmachinesazure'
-      fullPath: '/virtualmachinesazure'
-      preLoaderRoute: typeof VirtualmachinesazureLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/vpnsazure': {
-      id: '/vpnsazure'
-      path: '/vpnsazure'
-      fullPath: '/vpnsazure'
-      preLoaderRoute: typeof VpnsazureLazyImport
-      parentRoute: typeof rootRoute
-    }
-    // AWS Routes
-    '/amazon': {
-      id: '/amazon'
-      path: '/amazon'
-      fullPath: '/amazon'
-      preLoaderRoute: typeof AmazonLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/homeAWS': {
-      id: '/homeAWS'
-      path: '/homeAWS'
-      fullPath: '/homeAWS'
-      preLoaderRoute: typeof HomeAWSLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/LoginAWS': {
-      id: '/LoginAWS'
-      path: '/LoginAWS'
-      fullPath: '/LoginAWS'
-      preLoaderRoute: typeof LoginAWSLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/SyncAccountAWS': {
-      id: '/SyncAccountAWS'
-      path: '/SyncAccountAWS'
-      fullPath: '/SyncAccountAWS'
-      preLoaderRoute: typeof SyncAccountAWSLazyImport
-      parentRoute: typeof rootRoute
-    }
-    // General Routes
-    '/createUser': {
-      id: '/createUser'
-      path: '/createUser'
-      fullPath: '/createUser'
-      preLoaderRoute: typeof CreateUserLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/home': {
-      id: '/home'
-      path: '/home'
-      fullPath: '/home'
-      preLoaderRoute: typeof HomeLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/languages': {
-      id: '/languages'
-      path: '/languages'
-      fullPath: '/languages'
-      preLoaderRoute: typeof LanguagesLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/loginToken': {
-      id: '/loginToken'
-      path: '/loginToken'
-      fullPath: '/loginToken'
-      preLoaderRoute: typeof LoginTokenLazyImport
-      parentRoute: typeof rootRoute
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsLazyImport
       parentRoute: typeof rootRoute
     }
     '/users': {
@@ -598,8 +548,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersLazyImport
       parentRoute: typeof rootRoute
     }
+    '/virtualmachinesazure': {
+      id: '/virtualmachinesazure'
+      path: '/virtualmachinesazure'
+      fullPath: '/virtualmachinesazure'
+      preLoaderRoute: typeof VirtualmachinesazureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/virtualmachinesgoogle': {
+      id: '/virtualmachinesgoogle'
+      path: '/virtualmachinesgoogle'
+      fullPath: '/virtualmachinesgoogle'
+      preLoaderRoute: typeof VirtualmachinesgoogleLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/vpnsazure': {
+      id: '/vpnsazure'
+      path: '/vpnsazure'
+      fullPath: '/vpnsazure'
+      preLoaderRoute: typeof VpnsazureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/vpnsgoogle': {
+      id: '/vpnsgoogle'
+      path: '/vpnsgoogle'
+      fullPath: '/vpnsgoogle'
+      preLoaderRoute: typeof VpnsgoogleLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/SyncAccountAWS/laxy': {
+      id: '/SyncAccountAWS/laxy'
+      path: '/SyncAccountAWS/laxy'
+      fullPath: '/SyncAccountAWS/laxy'
+      preLoaderRoute: typeof SyncAccountAWSLaxyImport
+      parentRoute: typeof rootRoute
+    }
+    '/routes_azure/azure_routes': {
+      id: '/routes_azure/azure_routes'
+      path: '/routes_azure/azure_routes'
+      fullPath: '/routes_azure/azure_routes'
+      preLoaderRoute: typeof RoutesazureAzureroutesLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/routes_google/google_routes': {
+      id: '/routes_google/google_routes'
+      path: '/routes_google/google_routes'
+      fullPath: '/routes_google/google_routes'
+      preLoaderRoute: typeof RoutesgoogleGoogleroutesLazyImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
+
+// Create and export the route tree
+
+export const routeTree = rootRoute.addChildren({
+  IndexLazyRoute,
+  LoginAWSLazyRoute,
+  LoginAzureLazyRoute,
+  AksclusterazureLazyRoute,
+  AmazonLazyRoute,
+  AzureauthLazyRoute,
+  CreateUserLazyRoute,
+  DisksazureLazyRoute,
+  DisksgoogleLazyRoute,
+  FirewallsgoogleLazyRoute,
+  GoogleAuthLazyRoute,
+  HomeLazyRoute,
+  HomeAWSLazyRoute,
+  HomeazureLazyRoute,
+  HomegcpLazyRoute,
+  LanguagesLazyRoute,
+  LoadbalancersazureLazyRoute,
+  LoadbalancersgoogleLazyRoute,
+  LoginTokenLazyRoute,
+  NetworksazureLazyRoute,
+  NetworksgoogleLazyRoute,
+  NetworkssecurityazureLazyRoute,
+  ProjectsDetailsLazyRoute,
+  ProjectsgoogleLazyRoute,
+  SettingsLazyRoute,
+  SnapshotsazureLazyRoute,
+  SnapshotsgoogleLazyRoute,
+  SubnetworksazureLazyRoute,
+  SubscripriondetailsazureLazyRoute,
+  SubscriptionsazureLazyRoute,
+  SyncProjectLazyRoute,
+  SyncazuresubscriptionLazyRoute,
+  UsersLazyRoute,
+  VirtualmachinesazureLazyRoute,
+  VirtualmachinesgoogleLazyRoute,
+  VpnsazureLazyRoute,
+  VpnsgoogleLazyRoute,
+  SyncAccountAWSLaxyRoute,
+  RoutesazureAzureroutesLazyRoute,
+  RoutesgoogleGoogleroutesLazyRoute,
+})
 
 /* prettier-ignore-end */
 
@@ -646,6 +690,7 @@ declare module '@tanstack/react-router' {
         "/virtualmachinesgoogle",
         "/vpnsazure",
         "/vpnsgoogle",
+        "/SyncAccountAWS/laxy",
         "/routes_azure/azure_routes",
         "/routes_google/google_routes"
       ]
@@ -760,6 +805,9 @@ declare module '@tanstack/react-router' {
     },
     "/vpnsgoogle": {
       "filePath": "vpnsgoogle.lazy.tsx"
+    },
+    "/SyncAccountAWS/laxy": {
+      "filePath": "SyncAccountAWS.laxy.tsx"
     },
     "/routes_azure/azure_routes": {
       "filePath": "routes_azure/azure_routes.lazy.tsx"
