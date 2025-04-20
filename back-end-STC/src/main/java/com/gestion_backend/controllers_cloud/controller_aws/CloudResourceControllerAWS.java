@@ -278,59 +278,65 @@ public class CloudResourceControllerAWS {
         String email = request.get("email");
         String accountName = request.get("accountName");
 
-        System.out.println("Received account sync request for account with email: " + email);
-
-        if (accessKeyId == null || secretAccessKey == null || sessionToken == null) {
+        // Validación mejorada de parámetros
+        if (accessKeyId == null || accessKeyId.isEmpty() ||
+                secretAccessKey == null || secretAccessKey.isEmpty() ||
+                sessionToken == null || sessionToken.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Missing required parameters: credentials");
+                    .body(Map.of(
+                            "error", "Credenciales incompletas",
+                            "details", "Se requieren accessKeyId, secretAccessKey y sessionToken"
+                    ));
         }
 
         try {
-            // Crear objeto de credenciales
             AWSCloudCredentials credentials = new AWSCloudCredentials(accessKeyId, secretAccessKey, sessionToken);
 
-            // Verificar que las credenciales son válidas
-            boolean credentialsValid = resourceManagerServiceAWS.areCredentialsValid(credentials);
+            // Validar credenciales con timeout
+            boolean credentialsValid = false;
+            try {
+                credentialsValid = resourceManagerServiceAWS.areCredentialsValid(credentials);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of(
+                                "error", "Error validando credenciales",
+                                "details", e.getMessage()
+                        ));
+            }
+
             if (!credentialsValid) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("Invalid or expired credentials. Please log in again.");
+                        .body("Credenciales AWS inválidas o expiradas");
             }
 
-            // Sincronizar cuenta y recursos
-            System.out.println("Starting resource synchronization for AWS account");
-
-            // Si el email es null, utilizar un valor predeterminado
-            if (email == null) {
-                email = "unknown@aws.com";
+            // Obtener email si no se proporcionó
+            if (email == null || email.isEmpty()) {
+                email = resourceManagerServiceAWS.getEmailFromCredentials(credentials);
             }
 
-            // Llamar al método para sincronizar cuenta y recursos
+            // Sincronizar recursos
             resourceManagerServiceAWS.syncUserAccountsAndResources(credentials, email);
 
+            // Obtener accountId para la respuesta
+            String accountId = resourceManagerServiceAWS.getAccountIdFromCredentials(credentials);
+
             return ResponseEntity.ok(Map.of(
-                    "message", "Cuenta AWS sincronizada correctamente.",
-                    "accountId", credentials.getAccessKeyId().substring(0, 12), // Usar parte del access key como ID
+                    "message", "Cuenta AWS sincronizada correctamente",
+                    "accountId", accountId,
                     "accountName", accountName != null ? accountName : "AWS Account"
             ));
         } catch (Exception e) {
-            System.err.println("Error during account synchronization: " + e.getMessage());
-            e.printStackTrace();
-
+            // Respuesta de error más detallada
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("message", "Error processing AWS account resources");
+            errorResponse.put("message", "Error procesando recursos AWS");
             errorResponse.put("error", e.getMessage());
             errorResponse.put("errorType", e.getClass().getName());
 
-            StackTraceElement[] stackTrace = e.getStackTrace();
-            List<String> stackTraceDetail = new ArrayList<>();
-            for (int i = 0; i < Math.min(5, stackTrace.length); i++) {
-                stackTraceDetail.add(stackTrace[i].toString());
-            }
-            errorResponse.put("stackTrace", stackTraceDetail);
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(errorResponse);
         }
     }
+
 
     // Endpoint para obtener detalles de una cuenta específica
     @GetMapping("/account/{accountId}")

@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function SubnetworksAzure() {
   const [filter, setFilter] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subscriptionDisplayName, setSubscriptionDisplayName] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const selectedSubscriptionId = sessionStorage.getItem('selectedSubscription');
+        const selectedSubscriptionDisplayName = sessionStorage.getItem('selectedSubscriptionDisplayName');
+        
         if (!selectedSubscriptionId) {
           console.error('No subscription selected.');
           setLoading(false);
           return;
         }
+
+        setSubscriptionDisplayName(selectedSubscriptionDisplayName || 'Azure');
 
         const result = await fetch(`http://localhost:8080/api/cloud/subnetworksazure?subscriptionId=${selectedSubscriptionId}`);
         const jsonData = await result.json();
@@ -42,74 +45,27 @@ export default function SubnetworksAzure() {
     )
   );
 
-  // Función para exportar a CSV
-  const exportToCSV = () => {
-    const headers = [
-      'ID',
-      'Name',
-      'Network ID',
-      'Subscription ID',
-      'Address Prefix',
-      'Private Endpoint Policies',
-      'Private Link Policies',
-      'Description'
-    ];
-
-    const csvRows = [
-      headers,
-      ...filteredData.map(item => [
-        item.subnetwork_id,
-        item.name,
-        item.network_id,
-        item.subscription_id,
-        item.address_prefix,
-        item.private_endpoint_network_policies,
-        item.private_link_service_network_policies,
-        item.description
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    saveAs(blob, `Azure_Subnetworks_${subscriptionName}_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Función para exportar a PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    
-    doc.text(`Azure Subnetworks - ${subscriptionName}`, 14, 15);
-    
-    autoTable(doc, {
-      head: [['ID', 'Name', 'Network ID', 'Subscription ID', 'Address Prefix', 'Private Endpoint Policies', 'Private Link Policies', 'Description']],
-      body: filteredData.map(item => [
-        item.subnetwork_id,
-        item.name,
-        item.network_id,
-        item.subscription_id,
-        item.address_prefix,
-        item.private_endpoint_network_policies,
-        item.private_link_service_network_policies,
-        item.description
-      ]),
-      startY: 20,
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: {
-        0: { cellWidth: 40 }
-      },
-      didDrawPage: (data) => {
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 10);
-      }
-    });
-    
-    doc.save(`Azure_Subnetworks_${subscriptionName}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  // Define columns for export
+  const columns = [
+    { header: 'ID', accessor: 'subnetwork_id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Network ID', accessor: 'network_id' },
+    { header: 'Subscription ID', accessor: 'subscription_id' },
+    { header: 'Address Prefix', accessor: 'address_prefix' },
+    { header: 'Private Endpoint Policies', accessor: 'private_endpoint_network_policies' },
+    { header: 'Private Link Policies', accessor: 'private_link_service_network_policies' },
+    { header: 'Description', accessor: 'description' }
+  ];
 
   return (
     <Sidebar showBackButton={true}>
       <div className="flex flex-col h-screen">
+        <h1 className="text-3xl font-bold mb-2 mt-4 ml-6 text-[#0078D4]">
+          Microsoft Azure
+        </h1>
+        <h1 className="text-2xl font-bold mb-6 ml-6 text-[#0078D4]">
+          Subnetworks - {subscriptionDisplayName}
+        </h1>
         <div className="w-full flex flex-col flex-grow">
           <div className="flex justify-between mb-4 px-6">
             <h1 className="text-2xl text-[#0078D4] self-center">Azure Subnetworks</h1>
@@ -120,18 +76,12 @@ export default function SubnetworksAzure() {
                 value={filter}
                 onChange={handleInputChange}
               />
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
+              <ExportarDatosArchivos
+                data={filteredData}
+                columns={columns}
+                filename={`Azure_Subnetworks_${subscriptionDisplayName}`}
+                title={`Azure Subnetworks - ${subscriptionDisplayName}`}
+              />
             </div>
           </div>
           

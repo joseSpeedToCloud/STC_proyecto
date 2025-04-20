@@ -53,7 +53,7 @@ const LoginToken = () => {
             className="relative border rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow cursor-pointer bg-white"
             onClick={() => handleCardClick('google')}
           >
-            <img src={googleLogo} alt="Google" className="w-16 h-16 mx-auto mb-4" />
+            <img src={googleLogo} alt="Google" className="w-16 h-14 mx-auto mb-4" />
             <h2 className="text-xl font-bold text-center text-[#3F9BB9]">Login with Google</h2>
           </div>
 

@@ -10,7 +10,7 @@ const SyncProject = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showCopied, setShowCopied] = useState(null); // To manage the "copied" message
+  const [showCopied, setShowCopied] = useState(null);
   const navigate = useNavigate();
 
   // Check authentication on component mount
@@ -111,7 +111,7 @@ const SyncProject = () => {
     try {
       navigator.clipboard.writeText(text);
       setShowCopied(index);
-      setTimeout(() => setShowCopied(null), 2000); // "Copied!" disappears after 2 seconds
+      setTimeout(() => setShowCopied(null), 2000);
     } catch (err) {
       console.error("Error al copiar:", err);
     }

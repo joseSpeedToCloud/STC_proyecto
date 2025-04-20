@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import { useNavigate } from '@tanstack/react-router';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 const NetworkSecurityGroupAzure = () => {
   const [securityGroups, setSecurityGroups] = useState([]);
@@ -11,6 +9,7 @@ const NetworkSecurityGroupAzure = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('');
   const navigate = useNavigate();
+  const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
 
   useEffect(() => {
     const fetchSecurityGroups = async () => {
@@ -63,67 +62,16 @@ const NetworkSecurityGroupAzure = () => {
     )
   );
 
-  // Función para exportar a CSV
-  const exportToCSV = () => {
-    const headers = [
-      'ID',
-      'Name',
-      'Resource Group',
-      'Subscription ID',
-      'Location',
-      'Rules Count',
-      'Status'
-    ];
-
-    const csvRows = [
-      headers,
-      ...filteredSecurityGroups.map(group => [
-        group.id.split('/').pop(),
-        group.name,
-        group.resourceGroup,
-        group.subscription_id,
-        group.location,
-        group.security_rules ? group.security_rules.length : 0,
-        'Active'
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    saveAs(blob, `Azure_NetworkSecurityGroups_${subscriptionName}_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Función para exportar a PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    
-    doc.text(`Azure Network Security Groups - ${subscriptionName}`, 14, 15);
-    
-    autoTable(doc, {
-      head: [['ID', 'Name', 'Resource Group', 'Subscription ID', 'Location', 'Rules Count', 'Status']],
-      body: filteredSecurityGroups.map(group => [
-        group.id.split('/').pop(),
-        group.name,
-        group.resourceGroup,
-        group.subscription_id,
-        group.location,
-        group.security_rules ? group.security_rules.length : 0,
-        'Active'
-      ]),
-      startY: 20,
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: {
-        0: { cellWidth: 40 }
-      },
-      didDrawPage: (data) => {
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 10);
-      }
-    });
-    
-    doc.save(`Azure_NetworkSecurityGroups_${subscriptionName}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  // Define columns for export
+  const exportColumns = [
+    { header: 'ID', accessor: group => group.id.split('/').pop() },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Resource Group', accessor: 'resourceGroup' },
+    { header: 'Subscription ID', accessor: 'subscription_id' },
+    { header: 'Location', accessor: 'location' },
+    { header: 'Rules Count', accessor: group => group.security_rules ? group.security_rules.length : 0 },
+    { header: 'Status', accessor: () => 'Active' }
+  ];
 
   if (loading) {
     return (
@@ -167,18 +115,13 @@ const NetworkSecurityGroupAzure = () => {
                 value={filter}
                 onChange={handleInputChange}
               />
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
+              <ExportarDatosArchivos
+                data={filteredSecurityGroups}
+                columns={exportColumns}
+                filename={`Azure_NetworkSecurityGroups_${subscriptionName}`}
+                title={`Azure Network Security Groups - ${subscriptionName}`}
+                subtitle={`Total: ${filteredSecurityGroups.length} security groups`}
+              />
             </div>
           </div>
           <table className="min-w-full bg-white rounded-lg">
@@ -224,3 +167,4 @@ const NetworkSecurityGroupAzure = () => {
 };
 
 export default NetworkSecurityGroupAzure;
+

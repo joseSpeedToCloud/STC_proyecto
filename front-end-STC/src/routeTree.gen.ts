@@ -13,10 +13,11 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SyncAccountAWSLaxyImport } from './routes/SyncAccountAWS.laxy'
+import { Route as SyncAccountAWSRoute } from './routes/SyncAccountAWS'
 
 // Create Virtual Routes
 
+const AccountdetailsawsLazyImport = createFileRoute('/accountdetailsaws')()
 const VpnsgoogleLazyImport = createFileRoute('/vpnsgoogle')()
 const VpnsazureLazyImport = createFileRoute('/vpnsazure')()
 const VirtualmachinesgoogleLazyImport = createFileRoute(
@@ -72,6 +73,11 @@ const RoutesazureAzureroutesLazyImport = createFileRoute(
 )()
 
 // Create/Update Routes
+
+const AccountdetailsawsLazyRoute = AccountdetailsawsLazyImport.update({
+  path: '/accountdetailsaws',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/accountdetailsaws.lazy').then((d) => d.Route))
 
 const VpnsgoogleLazyRoute = VpnsgoogleLazyImport.update({
   path: '/vpnsgoogle',
@@ -289,6 +295,11 @@ const LoginAWSLazyRoute = LoginAWSLazyImport.update({
 const IndexLazyRoute = IndexLazyImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+  beforeLoad: ({ location, params }) => {
+    // Redirigir a login por defecto si no hay sesión activa
+    // Esto se puede ajustar según la lógica de autenticación
+    return { redirect: '/LoginAWS' }
+  }
 } as any).lazy(() => import('./routes/index.lazy').then((d) => d.Route))
 
 const RoutesgoogleGoogleroutesLazyRoute =
@@ -308,8 +319,8 @@ const RoutesazureAzureroutesLazyRoute = RoutesazureAzureroutesLazyImport.update(
   import('./routes/routes_azure/azure_routes.lazy').then((d) => d.Route),
 )
 
-const SyncAccountAWSLaxyRoute = SyncAccountAWSLaxyImport.update({
-  path: '/SyncAccountAWS/laxy',
+const SyncAccountAWSRoute = SyncAccountAWSRoute.update({
+  path: '/SyncAccountAWS',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -336,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/LoginAzure'
       fullPath: '/LoginAzure'
       preLoaderRoute: typeof LoginAzureLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/accountdetailsaws': {
+      id: '/accountdetailsaws'
+      path: '/accountdetailsaws'
+      fullPath: '/accountdetailsaws'
+      preLoaderRoute: typeof AccountdetailsawsLazyImport
       parentRoute: typeof rootRoute
     }
     '/aksclusterazure': {
@@ -576,11 +594,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VpnsgoogleLazyImport
       parentRoute: typeof rootRoute
     }
-    '/SyncAccountAWS/laxy': {
-      id: '/SyncAccountAWS/laxy'
-      path: '/SyncAccountAWS/laxy'
-      fullPath: '/SyncAccountAWS/laxy'
-      preLoaderRoute: typeof SyncAccountAWSLaxyImport
+    '/SyncAccountAWS': {
+      id: '/SyncAccountAWS'
+      path: '/SyncAccountAWS'
+      fullPath: '/SyncAccountAWS'
+      preLoaderRoute: typeof SyncAccountAWSImport
       parentRoute: typeof rootRoute
     }
     '/routes_azure/azure_routes': {
@@ -606,6 +624,7 @@ export const routeTree = rootRoute.addChildren({
   IndexLazyRoute,
   LoginAWSLazyRoute,
   LoginAzureLazyRoute,
+  AccountdetailsawsLazyRoute,
   AksclusterazureLazyRoute,
   AmazonLazyRoute,
   AzureauthLazyRoute,
@@ -640,10 +659,11 @@ export const routeTree = rootRoute.addChildren({
   VirtualmachinesgoogleLazyRoute,
   VpnsazureLazyRoute,
   VpnsgoogleLazyRoute,
-  SyncAccountAWSLaxyRoute,
+  SyncAccountAWSRoute,
   RoutesazureAzureroutesLazyRoute,
   RoutesgoogleGoogleroutesLazyRoute,
 })
+
 
 /* prettier-ignore-end */
 
@@ -690,7 +710,6 @@ export const routeTree = rootRoute.addChildren({
         "/virtualmachinesgoogle",
         "/vpnsazure",
         "/vpnsgoogle",
-        "/SyncAccountAWS/laxy",
         "/routes_azure/azure_routes",
         "/routes_google/google_routes"
       ]
@@ -805,9 +824,6 @@ export const routeTree = rootRoute.addChildren({
     },
     "/vpnsgoogle": {
       "filePath": "vpnsgoogle.lazy.tsx"
-    },
-    "/SyncAccountAWS/laxy": {
-      "filePath": "SyncAccountAWS.laxy.tsx"
     },
     "/routes_azure/azure_routes": {
       "filePath": "routes_azure/azure_routes.lazy.tsx"

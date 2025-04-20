@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 const ProjectDetails = () => {
   const [totals, setTotals] = useState({
@@ -16,7 +14,9 @@ const ProjectDetails = () => {
     vpns: 0,
   });
 
-  const [projectDisplayName, setProjectDisplayName] = useState(''); // Estado para el nombre del proyecto
+  const [projectDisplayName, setProjectDisplayName] = useState('');
+  const [loadingTotals, setLoadingTotals] = useState(true);
+  const [errorTotals, setErrorTotals] = useState(null);
 
   const routes = {
     virtualMachines: '/virtualmachinesgoogle',
@@ -27,9 +27,6 @@ const ProjectDetails = () => {
     snapshots: '/snapshotsgoogle',
     vpns: '/vpnsgoogle',
   };
-
-  const [loadingTotals, setLoadingTotals] = useState(true);
-  const [errorTotals, setErrorTotals] = useState(null);
 
   useEffect(() => {
     const fetchTotals = async () => {
@@ -46,7 +43,7 @@ const ProjectDetails = () => {
         return;
       }
 
-      setProjectDisplayName(selectedProjectDisplayName); // Establece el nombre del proyecto en el estado
+      setProjectDisplayName(selectedProjectDisplayName);
 
       const totalsData = { ...totals };
 
@@ -54,9 +51,9 @@ const ProjectDetails = () => {
         const fetchResource = async (resource) => {
           const response = await axios.get(`http://localhost:8080/api/cloud/${resource}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
-            params: { projectId: selectedProjectId }, // Filtrar por project_id
+            params: { projectId: selectedProjectId },
           });
-          return response.data; // Devuelve solo los datos ya filtrados
+          return response.data;
         };
 
         // Fetch y filtrar recursos por project ID
@@ -80,29 +77,19 @@ const ProjectDetails = () => {
     fetchTotals();
   }, []);
 
-  const exportToCSV = () => {
-    const csvRows = [
-      ['Recurso', 'Cantidad'],
-      ...Object.entries(totals).map(([key, value]) => [key, value]),
-    ];
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `Proyecto_${projectDisplayName}.csv`);
+  // Preparar los datos para exportar
+  const prepareExportData = () => {
+    return Object.entries(totals).map(([key, value]) => ({
+      recurso: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'),
+      cantidad: value
+    }));
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text(`Detalles del Proyecto: ${projectDisplayName}`, 10, 10);
-  
-    // Usa autoTable de forma correcta
-    autoTable(doc, {
-      head: [['Recurso', 'Cantidad']],
-      body: Object.entries(totals).map(([key, value]) => [key, value]),
-    });
-  
-    doc.save(`Proyecto_${projectDisplayName}.pdf`);
-  };
-  
+  // Definir columnas para exportar
+  const columns = [
+    { header: 'Recurso', accessor: 'recurso' },
+    { header: 'Cantidad', accessor: 'cantidad' }
+  ];
 
   if (loadingTotals) {
     return (
@@ -131,15 +118,15 @@ const ProjectDetails = () => {
         <h1 className="text-2xl font-bold mb-6 text-[#3F9BB9]">
           Recursos del Proyecto {projectDisplayName}
         </h1>
-          <div className="flex flex-wrap mt-8">
-            {Object.entries(totals).map(([key, value]) => (
-              <a
-                key={key}
-                href={routes[key]}
-                className="w-1/5 sm:w-1/2 md:w-1/5 flex flex-row justify-between items-start
-                py-6 px-6 border-2 rounded-md font-sans text-lg mx-2 mb-6
-                text-left font-semibold text-xl text-[#3F9BB9] hover:shadow-lg transition-shadow duration-200"
-              >
+        <div className="flex flex-wrap mt-8">
+          {Object.entries(totals).map(([key, value]) => (
+            <a
+              key={key}
+              href={routes[key]}
+              className="w-1/5 sm:w-1/2 md:w-1/5 flex flex-row justify-between items-start
+              py-6 px-6 border-2 rounded-md font-sans text-lg mx-2 mb-6
+              text-left font-semibold text-xl text-[#3F9BB9] hover:shadow-lg transition-shadow duration-200"
+            >
               <div className="flex-1">
                 <div>
                   {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
@@ -152,19 +139,14 @@ const ProjectDetails = () => {
           ))}
           {errorTotals && <div className="text-red-500 mt-4">{errorTotals}</div>}
         </div>
-        <div className="mt-6 flex space-x-4">
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Exportar a CSV
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-          >
-            Exportar a PDF
-          </button>
+        <div className="mt-6">
+          <ExportarDatosArchivos
+            data={prepareExportData()}
+            columns={columns}
+            filename={`Proyecto_${projectDisplayName}`}
+            title={`Detalles del Proyecto: ${projectDisplayName}`}
+            subtitle="Resumen de Recursos"
+          />
         </div>
       </div>
     </Sidebar>

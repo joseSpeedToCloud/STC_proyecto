@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function VirtualMachinesAzure() {
   const [filter, setFilter] = useState('');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedRows, setExpandedRows] = useState({});
+  const [subscriptionName, setSubscriptionName] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         const selectedSubscriptionId = sessionStorage.getItem('selectedSubscription');
+        const displayName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
+        setSubscriptionName(displayName);
+        
         if (!selectedSubscriptionId) {
           console.error('No subscription selected.');
           setLoading(false);
@@ -76,64 +78,17 @@ export default function VirtualMachinesAzure() {
     )
   );
 
-  // Function to export to CSV
-  const exportToCSV = () => {
-    const headers = [
-      'ID', 'Name', 'Resource Group', 'Subscription ID', 
-      'VM Size', 'Location', 'Status', 'Additional Details'
-    ];
-
-    const csvRows = [
-      headers,
-      ...filteredData.map(item => [
-        item.machine_id,
-        item.name,
-        item.resourceGroup,
-        item.subscription_id,
-        item.machine_type || item.vm_size,
-        item.zone || item.location,
-        item.status,
-        item.additionalDetails
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    saveAs(blob, `Azure_VirtualMachines_${subscriptionName}_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Function to export to PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    
-    doc.text(`Azure Virtual Machines - ${subscriptionName}`, 14, 15);
-    
-    autoTable(doc, {
-      head: [['ID', 'Name', 'Resource Group', 'Subscription ID', 'VM Size', 'Location', 'Status', 'Additional Details']],
-      body: filteredData.map(item => [
-        item.machine_id,
-        item.name,
-        item.resourceGroup,
-        item.subscription_id,
-        item.machine_type || item.vm_size,
-        item.zone || item.location,
-        item.status,
-        item.additionalDetails
-      ]),
-      startY: 20,
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: {
-        0: { cellWidth: 40 }
-      },
-      didDrawPage: (data) => {
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 10);
-      }
-    });
-    
-    doc.save(`Azure_VirtualMachines_${subscriptionName}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  // Define columns for export
+  const exportColumns = [
+    { header: 'ID', accessor: (item) => item.machine_id },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Resource Group', accessor: 'resourceGroup' },
+    { header: 'Subscription ID', accessor: 'subscription_id' },
+    { header: 'VM Size', accessor: (item) => item.machine_type || item.vm_size },
+    { header: 'Location', accessor: (item) => item.zone || item.location },
+    { header: 'Status', accessor: 'status' },
+    { header: 'Additional Details', accessor: 'additionalDetails' }
+  ];
 
   return (
     <Sidebar showBackButton={true}>
@@ -148,18 +103,13 @@ export default function VirtualMachinesAzure() {
                 value={filter}
                 onChange={handleInputChange}
               />
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
+              <ExportarDatosArchivos
+                data={filteredData}
+                columns={exportColumns}
+                filename={`Azure_VirtualMachines_${subscriptionName}`}
+                title="Azure Virtual Machines"
+                subtitle={subscriptionName}
+              />
             </div>
           </div>
           

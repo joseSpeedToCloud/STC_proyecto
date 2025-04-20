@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function NetworksAzure() {
   const [filter, setFilter] = useState('');
@@ -42,67 +40,20 @@ export default function NetworksAzure() {
     )
   );
 
-  // Función para exportar a CSV
-  const exportToCSV = () => {
-    const headers = [
-      'ID',
-      'Name',
-      'Subscription ID',
-      'Address Space',
-      'DDoS Protection',
-      'VM Protection',
-      'Description'
-    ];
+  // Define columns for the ExportarDatosArchivos component
+  const columns = [
+    { header: 'ID', accessor: 'network_id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Subscription ID', accessor: 'subscription_id' },
+    { header: 'Address Space', accessor: 'address_space' },
+    { header: 'DDoS Protection', accessor: item => item.enable_ddos_protection ? 'Yes' : 'No' },
+    { header: 'VM Protection', accessor: item => item.enable_vm_protection ? 'Yes' : 'No' },
+    { header: 'Description', accessor: 'description' }
+  ];
 
-    const csvRows = [
-      headers,
-      ...filteredData.map(item => [
-        item.network_id,
-        item.name,
-        item.subscription_id,
-        item.address_space,
-        item.enable_ddos_protection ? 'Yes' : 'No',
-        item.enable_vm_protection ? 'Yes' : 'No',
-        item.description
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    saveAs(blob, `Azure_VirtualNetworks_${subscriptionName}_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Función para exportar a PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
-    
-    doc.text(`Azure Virtual Networks - ${subscriptionName}`, 14, 15);
-    
-    autoTable(doc, {
-      head: [['ID', 'Name', 'Subscription ID', 'Address Space', 'DDoS Protection', 'VM Protection', 'Description']],
-      body: filteredData.map(item => [
-        item.network_id,
-        item.name,
-        item.subscription_id,
-        item.address_space,
-        item.enable_ddos_protection ? 'Yes' : 'No',
-        item.enable_vm_protection ? 'Yes' : 'No',
-        item.description
-      ]),
-      startY: 20,
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: {
-        0: { cellWidth: 40 }
-      },
-      didDrawPage: (data) => {
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 10);
-      }
-    });
-    
-    doc.save(`Azure_VirtualNetworks_${subscriptionName}_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  // Get subscription name for file naming
+  const subscriptionName = sessionStorage.getItem('selectedSubscriptionDisplayName') || 'Azure';
+  const exportFilename = `Azure_VirtualNetworks_${subscriptionName}`;
 
   return (
     <Sidebar showBackButton={true}>
@@ -110,25 +61,20 @@ export default function NetworksAzure() {
         <div className="w-full flex flex-col flex-grow">
           <div className="flex justify-between mb-4 px-6">
             <h1 className="text-2xl text-[#0078D4] self-center">Azure Virtual Networks</h1>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 items-center">
               <input
                 placeholder="Filter"
                 className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
                 value={filter}
                 onChange={handleInputChange}
               />
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
+              <ExportarDatosArchivos
+                data={filteredData}
+                columns={columns}
+                filename={exportFilename}
+                title="Azure Virtual Networks"
+                subtitle={subscriptionName}
+              />
             </div>
           </div>
           
@@ -175,3 +121,4 @@ export default function NetworksAzure() {
     </Sidebar>
   );
 }
+

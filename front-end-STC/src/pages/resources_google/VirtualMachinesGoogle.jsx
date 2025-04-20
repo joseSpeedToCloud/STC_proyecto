@@ -1,60 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function VirtualMachinesGoogle() {
   const [filter, setFilter] = useState('');
   const [data, setData] = useState([]);
-  const [projectDisplayName, setProjectDisplayName] = useState(''); // Estado para el nombre del proyecto
+  const [projectDisplayName, setProjectDisplayName] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const selectedProjectId = sessionStorage.getItem('selectedProject');
         const selectedProjectDisplayName = sessionStorage.getItem("selectedProjectDisplayName");
 
         if (!selectedProjectId) {
           console.error('No se ha seleccionado un proyecto.');
+          setLoading(false);
           return;
         }
 
-        setProjectDisplayName(selectedProjectDisplayName); // Establece el nombre del proyecto en el estado
+        setProjectDisplayName(selectedProjectDisplayName);
 
         const result = await fetch(`http://localhost:8080/api/cloud/virtualmachinesgoogle?projectId=${selectedProjectId}`);
         const jsonData = await result.json();
         setData(jsonData);
       } catch (error) {
         console.error('Error al obtener los datos:', error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
-
-    const exportToCSV = () => {
-      const csvRows = [
-        ['ID', 'Name', 'Project ID', 'Machine Type', 'Zone', 'Status'],
-        ...filteredData.map(item => [
-          item.virtual_machine_id, item.name, item.project_id, item.machine_type, item.zone, item.status || ''
-        ])
-      ];
-        const csvContent = csvRows.map(e => e.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, `Virtual_Machines_${projectDisplayName}.csv`);
-      };
-    
-      const exportToPDF = () => {
-        const doc = new jsPDF();
-        doc.text(`Virtual Machines del Proyecto: ${projectDisplayName}`, 10, 10);
-        autoTable(doc, {
-          head: [['ID', 'Name', 'Project ID', 'Machine Type', 'Zone', 'Status']],
-          body: filteredData.map(item => [
-            item.virtual_machine_id, item.name, item.project_id, item.machine_type, item.zone, item.status || ''
-          ]),
-        });
-        doc.save(`Virtual_Machines_${projectDisplayName}.pdf`);
-      };
 
   const handleInputChange = (event) => {
     setFilter(event.target.value);
@@ -66,65 +45,83 @@ export default function VirtualMachinesGoogle() {
     )
   );
 
+  // Define columns for export
+  const columns = [
+    { header: 'ID', accessor: 'machine_id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Project ID', accessor: 'project_id' },
+    { header: 'Machine Type', accessor: 'machine_type' },
+    { header: 'Zone', accessor: 'zone' },
+    { header: 'Status', accessor: 'status' }
+  ];
+
   return (
     <Sidebar showBackButton={true}>
       <div className="flex flex-col h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-[#3F9BB9]">
+        <h1 className="text-3xl font-bold mb-2 mt-4 ml-6 text-[#3F9BB9]">
           Google Cloud
         </h1>
-        <h1 className="text-2xl font-bold mb-6 text-[#3F9BB9]">
+        <h1 className="text-2xl font-bold mb-6 ml-6 text-[#3F9BB9]">
           Virtual Machines del Proyecto {projectDisplayName}
         </h1>
         <div className="w-full flex flex-col flex-grow">
-          <div className="flex justify-end mb-4 space-x-2">
-            <input
-              placeholder="Filter"
-              className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
-              value={filter}
-              onChange={handleInputChange}
-            />
+          <div className="flex justify-between mb-4 px-6">
+            <h1 className="text-2xl text-[#3F9BB9] self-center">Virtual Machines</h1>
+            <div className="flex space-x-4">
+              <input
+                placeholder="Filter"
+                className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
+                value={filter}
+                onChange={handleInputChange}
+              />
+              <ExportarDatosArchivos
+                data={filteredData}
+                columns={columns}
+                filename={`Virtual_Machines_${projectDisplayName}`}
+                title={`Virtual Machines Google Cloud - ${projectDisplayName}`}
+              />
+            </div>
           </div>
-          <h1 className="text-2xl mb-6 ml-6 text-[#3F9BB9]">Virtual Machines</h1>
-          <table className="min-w-full bg-white rounded-lg">
-            <thead>
-              <tr className="bg-gray-200 text-[#0B6A8D] font-semibold">
-                <td className="py-2 px-4 border-b border-gray-200 text-center">ID</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-center">Name</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-center">Project ID</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-center">Machine Type</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-center">Zone</td>
-                <td className="py-2 px-4 border-b border-gray-200 text-center">Status</td>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredData.map((item, index) => (
-                <tr key={index}>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.machine_id}</td>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.name}</td>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.project_id}</td>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.machine_type}</td>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.zone}</td>
-                  <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.status}</td>
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="loader border-t-transparent border-blue-400 w-10 h-10 border-4 rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <table className="min-w-full bg-white rounded-lg">
+              <thead>
+                <tr className="bg-gray-200 text-[#0B6A8D] font-semibold">
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">ID</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">Name</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">Project ID</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">Machine Type</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">Zone</td>
+                  <td className="py-2 px-4 border-b border-gray-200 text-center">Status</td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="mt-6 flex space-x-4">
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Exportar a CSV
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-          >
-            Exportar a PDF
-          </button>
-        </div>
+              </thead>
+              <tbody>
+                {filteredData.length > 0 ? (
+                  filteredData.map((item, index) => (
+                    <tr key={index}>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.machine_id}</td>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.name}</td>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.project_id}</td>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.machine_type}</td>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.zone}</td>
+                      <td className="text-sm text-center py-2 px-4 border-b border-gray-200">{item.status}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="text-center py-4 text-gray-500">No data available</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>       
       </div>
     </Sidebar>
   );
-};
+}
+

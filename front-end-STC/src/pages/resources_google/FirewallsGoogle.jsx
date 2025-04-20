@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function FirewallsGoogle() {
   const [filter, setFilter] = useState('');
@@ -10,8 +8,18 @@ export default function FirewallsGoogle() {
   const [filteredData, setFilteredData] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [projectDisplayName, setProjectDisplayName] = useState(''); // Estado para el nombre del proyecto
-  
+  const [projectDisplayName, setProjectDisplayName] = useState('');
+
+  const firewallColumns = [
+    { header: 'ID', accessor: 'firewall_id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Project ID', accessor: 'project_id' },
+    { header: 'Direction', accessor: 'direction' },
+    { header: 'Priority', accessor: 'priority' },
+    { header: 'Protocol', accessor: 'protocol' },
+    { header: 'Source Ranges', accessor: 'source_ranges' },
+    { header: 'Target Tags', accessor: 'target_tags' }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,7 +36,7 @@ export default function FirewallsGoogle() {
           return;
         }
 
-        setProjectDisplayName(selectedProjectDisplayName); // Establece el nombre del proyecto en el estado
+        setProjectDisplayName(selectedProjectDisplayName);
 
         // Obtener los datos del backend
         const result = await fetch('http://localhost:8080/api/cloud/firewallsgoogle');
@@ -51,30 +59,6 @@ export default function FirewallsGoogle() {
 
     fetchData();
   }, []);
-
-  const exportToCSV = () => {
-    const csvRows = [
-      ['ID', 'Name', 'Project ID', 'Direction', 'Priority', 'Protocol', 'Source Ranges', 'Target Tags'],
-      ...filteredData.map(item => [
-        item.firewall_id, item.name, item.project_id, item.direction, item.priority, item.protocol, item.source_ranges, item.target_tags || ''
-      ])
-    ];
-      const csvContent = csvRows.map(e => e.join(',')).join('\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      saveAs(blob, `Firewalls_${projectDisplayName}.csv`);
-    };
-  
-    const exportToPDF = () => {
-      const doc = new jsPDF();
-      doc.text(`Firewalls del Proyecto: ${projectDisplayName}`, 10, 10);
-      autoTable(doc, {
-        head: [['ID', 'Name', 'Project ID', 'Direction', 'Priority', 'Protocol', 'Source Ranges', 'Target Tags']],
-        body: filteredData.map(item => [
-          item.firewall_id, item.name, item.project_id, item.direction, item.priority, item.protocol, item.source_ranges, item.target_tags || ''
-        ]),
-      });
-      doc.save(`Firewalls_${projectDisplayName}.pdf`);
-    };
 
   const handleInputChange = (event) => {
     const value = event.target.value;
@@ -110,22 +94,24 @@ export default function FirewallsGoogle() {
   return (
     <Sidebar showBackButton={true}>
       <div className="flex flex-col h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-[#3F9BB9]">
+        <h1 className="text-3xl font-bold mb-6 text-[#3F9BB9]">
           Google Cloud
         </h1>
         <h1 className="text-2xl font-bold mb-6 text-[#3F9BB9]">
           Firewalls del Proyecto {projectDisplayName}
         </h1>
         <div className="w-full flex flex-col flex-grow">
-          <div className="flex justify-end mb-4 space-x-2">
-            <input
-              placeholder="Filter"
-              className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
-              value={filter}
-              onChange={handleInputChange}
-            />
+          <div className="flex justify-between mb-4">
+            <h1 className="text-2xl ml-6 text-[#3F9BB9]">Firewalls</h1>
+            <div className="flex items-center space-x-4">
+              <input
+                placeholder="Filter"
+                className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
+                value={filter}
+                onChange={handleInputChange}
+              />
+            </div>
           </div>
-          <h1 className="text-2xl mb-6 ml-6 text-[#3F9BB9]">Firewalls</h1>
           <table className="min-w-full bg-white rounded-lg">
             <thead>
               <tr className="bg-gray-200 text-[#0B6A8D] font-semibold">
@@ -154,22 +140,18 @@ export default function FirewallsGoogle() {
               ))}
             </tbody>
           </table>
-          <div className="mt-6 flex space-x-4">
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Exportar a CSV
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-          >
-            Exportar a PDF
-          </button>
-        </div>
+          <div className="mt-6">
+            <ExportarDatosArchivos
+              data={filteredData}
+              columns={firewallColumns}
+              filename={`Firewalls_${projectDisplayName}`}
+              title="Google Cloud Firewalls"
+              subtitle={`Project: ${projectDisplayName}`}
+            />
+          </div>
         </div>
       </div>
     </Sidebar>
   );
 }
+

@@ -45,23 +45,7 @@ public class ResourceManagerServiceAWS {
         }
     }
 
-    // Método para obtener el ID de cuenta AWS a partir de las credenciales
-    public String getAccountIdFromCredentials(AWSCloudCredentials credentials) {
-        try {
-            IamClient iamClient = IamClient.builder()
-                    .credentialsProvider(credentials)
-                    .build();
-
-            GetUserResponse userResponse = iamClient.getUser();
-            String arn = userResponse.user().arn();
-            // El accountId es el cuarto elemento del ARN separado por ":"
-            return arn.split(":")[4];
-        } catch (Exception e) {
-            throw new RuntimeException("Error obteniendo el ID de cuenta AWS: " + e.getMessage(), e);
-        }
-    }
-
-    private String getEmailFromCredentials(AWSCloudCredentials credentials) {
+    public String getEmailFromCredentials(AWSCloudCredentials credentials) {
         try {
             StsClient stsClient = StsClient.builder()
                     .credentialsProvider(credentials)
@@ -116,8 +100,18 @@ public class ResourceManagerServiceAWS {
     // Método para sincronizar el usuario con las cuentas AWS
     public void syncUserAccountsAndResources(AWSCloudCredentials credentials, String email) {
         try {
-            // Obtener información de la cuenta AWS
-            String accountId = getAccountIdFromCredentials(credentials);
+            // Validar credenciales primero
+            if (!areCredentialsValid(credentials)) {
+                throw new RuntimeException("Credenciales AWS inválidas o expiradas");
+            }
+
+            // Obtener información de la cuenta AWS con manejo de errores
+            String accountId;
+            try {
+                accountId = getAccountIdFromCredentials(credentials);
+            } catch (Exception e) {
+                throw new RuntimeException("Error obteniendo ID de cuenta AWS: " + e.getMessage(), e);
+            }
 
             // Verificar si la cuenta ya existe
             AccountDataModel account = cloudResourceServiceAWS.getAccount(accountId);
@@ -127,15 +121,24 @@ public class ResourceManagerServiceAWS {
                 account = new AccountDataModel();
                 account.setId(accountId);
                 account.setName("AWS Account " + accountId);
-                account.setEmail(email);
+                account.setEmail(email != null ? email : getEmailFromCredentials(credentials));
                 account.setStatus("ACTIVE");
-                cloudResourceServiceAWS.saveAccount(account.getId(), account.getEmail(), null,
-                        account.getStatus(), account.getName(), null, null);
+
+                // Guardar la cuenta primero
+                cloudResourceServiceAWS.saveAccount(
+                        account.getId(),
+                        account.getEmail(),
+                        null,
+                        account.getStatus(),
+                        account.getName(),
+                        null,
+                        null
+                );
             }
 
-            // Extraer todos los recursos de AWS
-            extraerEC2Instances(credentials, account);
+            // Extraer recursos en orden lógico (VPCs primero, luego dependencias)
             extraerVPCs(credentials, account);
+            extraerEC2Instances(credentials, account);
             extraerSubnets(credentials, account);
             extraerSecurityGroups(credentials, account);
             extraerEBSVolumes(credentials, account);
@@ -147,9 +150,27 @@ public class ResourceManagerServiceAWS {
             extraerIAMRoles(credentials, account);
             extraerVPNConnections(credentials, account);
 
-            System.out.println("Recursos de AWS extraídos correctamente para la cuenta: " + accountId);
+            System.out.println("Sincronización completada para la cuenta AWS: " + accountId);
         } catch (Exception e) {
+            // Registrar el error completo
+            System.err.println("Error durante la sincronización de AWS:");
+            e.printStackTrace();
             throw new RuntimeException("Error sincronizando recursos de AWS: " + e.getMessage(), e);
+        }
+    }
+
+    // Método mejorado para obtener ID de cuenta
+    public String getAccountIdFromCredentials(AWSCloudCredentials credentials) {
+        try {
+            StsClient stsClient = StsClient.builder()
+                    .credentialsProvider(credentials)
+                    .region(Region.US_EAST_1)
+                    .build();
+
+            GetCallerIdentityResponse response = stsClient.getCallerIdentity();
+            return response.account();
+        } catch (Exception e) {
+            throw new RuntimeException("Error obteniendo ID de cuenta AWS. Verifique sus credenciales.", e);
         }
     }
 

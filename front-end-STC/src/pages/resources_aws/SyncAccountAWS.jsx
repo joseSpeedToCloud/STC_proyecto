@@ -2,24 +2,40 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "@tanstack/react-router";
 import Sidebar from '../../components/Sidebar';
-import { Copy } from "lucide-react";
 
-const SyncAWSAccount = () => {
-  const [accessKeyId, setAccessKeyId] = useState("");
-  const [secretAccessKey, setSecretAccessKey] = useState("");
-  const [sessionToken, setSessionToken] = useState("");
+const SyncAccountAWS = () => {
+  const [accountId, setAccountId] = useState("");
   const [accountName, setAccountName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
-  const [showCopied, setShowCopied] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Verifica si el usuario ya está autenticado con AWS
-    const accessKey = sessionStorage.getItem("awsAccessKeyId");
-    if (!accessKey) {
+    // Check if token exists
+    const token = sessionStorage.getItem("awsToken");
+    if (!token) {
+      // No token found, redirect to login
       navigate({ to: "/LoginAWS" });
+    }
+
+    // Check if sync has already been completed
+    const syncCompleted = sessionStorage.getItem("awsSyncCompleted");
+    if (syncCompleted === "true") {
+      // User has already completed sync, redirect to home
+      navigate({ to: "/homeaws" });
+    }
+
+    // If there's a selected account from before, pre-fill the form
+    const savedAccountId = sessionStorage.getItem("selectedAccountAWS");
+    const savedAccountName = sessionStorage.getItem("selectedAccountNameAWS");
+
+    if (savedAccountId) {
+      setAccountId(savedAccountId);
+    }
+
+    if (savedAccountName) {
+      setAccountName(savedAccountName);
     }
   }, [navigate]);
 
@@ -29,53 +45,56 @@ const SyncAWSAccount = () => {
     setProgress(0);
 
     try {
-      const storedAccessKeyId = sessionStorage.getItem("awsAccessKeyId") || accessKeyId;
-      const storedSecretAccessKey = sessionStorage.getItem("awsSecretAccessKey") || secretAccessKey;
-      const storedSessionToken = sessionStorage.getItem("awsSessionToken") || sessionToken;
+      const storedToken = JSON.parse(sessionStorage.getItem("awsToken"));
+      if (!storedToken?.accessKeyId || !storedToken?.secretAccessKey || !storedToken?.sessionToken) {
+        throw new Error("Credenciales AWS incompletas en el almacenamiento");
+      }
+
       const email = sessionStorage.getItem("awsEmail") || "";
 
-      // Intervalo para simular progreso
       const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 20, 90));
-      }, 500);
+        setProgress(prev => Math.min(prev + 10, 90)); // Progreso más lento
+      }, 800);
 
-      // Primero valida las credenciales de AWS
-      const validationResponse = await axios.post(
-        "http://localhost:8080/api/aws/validate-token-aws",
+      // Sync the AWS account
+      const response = await axios.post(
+        "http://localhost:8080/api/aws/save-account",
         {
-          accessKeyId: storedAccessKeyId,
-          secretAccessKey: storedSecretAccessKey,
-          sessionToken: storedSessionToken
+          accessKeyId: storedToken.accessKeyId,
+          secretAccessKey: storedToken.secretAccessKey,
+          sessionToken: storedToken.sessionToken,
+          email: email,
+          accountName: accountName || "AWS Account"
+        },
+        {
+          timeout: 300000 // 5 minutos timeout
         }
       );
 
-      if (validationResponse.status === 200) {
-        // Si son válidas, sincroniza la cuenta de AWS
-        const response = await axios.post(
-          "http://localhost:8080/api/aws/save-account",
-          {
-            accessKeyId: storedAccessKeyId,
-            secretAccessKey: storedSecretAccessKey,
-            sessionToken: storedSessionToken,
-            email: email,
-            accountName: accountName || "AWS Account"
-          }
-        );
+      clearInterval(progressInterval);
+      setProgress(100);
 
-        clearInterval(progressInterval);
-        setProgress(100);
+      if (response.data?.error) {
+        throw new Error(response.data.error);
+      }
 
-        if (response.status === 200) {
-          const accountId = response.data.accountId;
-          sessionStorage.setItem("selectedAWSAccount", accountId);
-          sessionStorage.setItem("selectedAWSAccountName", accountName || accountId);
-          setTimeout(() => navigate({ to: "/HomeAWS" }), 500);
-        }
+      if (response.status === 200) {
+        const accountId = response.data.accountId ||
+          storedToken.accessKeyId.substring(0, 12);
+
+        sessionStorage.setItem("selectedAccountAWS", accountId);
+        sessionStorage.setItem("selectedAccountNameAWS", accountName || "AWS Account");
+        sessionStorage.setItem("awsSyncCompleted", "true");
+
+        setTimeout(() => navigate({ to: "/homeaws" }), 1000);
       }
     } catch (error) {
-      console.error("Error sincronizando cuenta AWS:", error);
+      console.error("Error syncing AWS account:", error);
       setErrorMessage(
-        error.response?.data?.message || "Fallo al sincronizar cuenta AWS. Por favor verifica tus credenciales e intenta nuevamente."
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Error desconocido al sincronizar cuenta AWS"
       );
       setProgress(0);
     } finally {
@@ -83,63 +102,34 @@ const SyncAWSAccount = () => {
     }
   };
 
-  const handleCopy = (text, index) => {
-    try {
-      navigator.clipboard.writeText(text);
-      setShowCopied(index);
-      setTimeout(() => setShowCopied(null), 2000); // "Copiado!" desaparece después de 2 segundos
-    } catch (err) {
-      console.error("Error copiando texto:", err);
-    }
-  };
-
   return (
     <Sidebar showBackButton={true}>
       <div className="flex items-center justify-center flex-1 bg-gray-100 p-4">
         <div className="bg-white shadow-lg rounded-lg p-8 text-center space-y-6 w-[90%] max-w-md">
-          <h1 className="text-xl font-bold">Configuración de Cuenta AWS</h1>
+          <h1 className="text-xl font-bold">Sync AWS Account</h1>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Access Key ID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Account ID</label>
               <input
                 type="text"
-                value={accessKeyId}
-                onChange={(e) => setAccessKeyId(e.target.value)}
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
                 className="w-full px-3 py-2 border rounded"
-                placeholder="Ingresa tu AWS Access Key ID"
+                placeholder="Enter your AWS Account ID (optional)"
                 disabled={isLoading}
               />
+              <p className="text-xs text-gray-500 text-left mt-1">
+                Will be auto-detected if not provided
+              </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Secret Access Key</label>
-              <input
-                type="password"
-                value={secretAccessKey}
-                onChange={(e) => setSecretAccessKey(e.target.value)}
-                className="w-full px-3 py-2 border rounded"
-                placeholder="Ingresa tu AWS Secret Access Key"
-                disabled={isLoading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Session Token (opcional)</label>
-              <input
-                type="password"
-                value={sessionToken}
-                onChange={(e) => setSessionToken(e.target.value)}
-                className="w-full px-3 py-2 border rounded"
-                placeholder="Ingresa tu AWS Session Token"
-                disabled={isLoading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre de Cuenta (opcional)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
               <input
                 type="text"
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
                 className="w-full px-3 py-2 border rounded"
-                placeholder="Ingresa un nombre para mostrar"
+                placeholder="Enter a display name for this account"
                 disabled={isLoading}
               />
             </div>
@@ -152,38 +142,26 @@ const SyncAWSAccount = () => {
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
-              <p className="text-sm text-gray-600 mt-2">{progress}%</p>
+              <p className="text-sm text-gray-600 mt-2">{progress}% - Syncing resources...</p>
             </div>
           ) : (
             <button
               onClick={handleSyncAccount}
               className="py-2 px-4 rounded bg-blue-500 hover:bg-blue-600 text-white"
-              disabled={(!accessKeyId || !secretAccessKey) && !sessionStorage.getItem("awsAccessKeyId") || isLoading}
+              disabled={isLoading}
             >
-              Sincronizar Cuenta AWS
+              Sync AWS Account
             </button>
           )}
           <div className="text-sm text-gray-500 mt-4">
             <div className="bg-gray-50 p-4 rounded-md border border-gray-300 text-left">
-              <p className="font-medium mb-2">Cómo encontrar tus credenciales de AWS:</p>
-              <p className="mb-2">1. Usando AWS CLI:</p>
-              <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-md border border-gray-300">
-                Ejecuta el siguiente comando en tu terminal:
-                <br />
-                <div className="flex items-center justify-center">
-                  <strong><code>aws configure get aws_access_key_id</code></strong>
-                  <button onClick={() => handleCopy('aws configure get aws_access_key_id', 1)} className="ml-2 relative">
-                    <Copy className="w-5 h-5" />
-                    {showCopied === 1 && (
-                      <span className="absolute top-[-22px] right-[-10px] text-xs text-green-500 transition-opacity duration-300 bg-white px-1 rounded">
-                        Copiado!
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-              <p className="mt-4 mb-2">2. En AWS Management Console:</p>
-              <p>IAM → Usuarios → Selecciona tu usuario → Credenciales de seguridad → Claves de acceso</p>
+              <p className="font-medium mb-2">What happens during sync:</p>
+              <ul className="list-disc pl-5 space-y-1">
+                <li>We scan your AWS account for resources</li>
+                <li>All EC2 instances, S3 buckets, and other resources will be indexed</li>
+                <li>This process may take a few moments to complete</li>
+                <li>No changes will be made to your AWS account</li>
+              </ul>
             </div>
           </div>
           {errorMessage && (
@@ -195,7 +173,5 @@ const SyncAWSAccount = () => {
   );
 };
 
-export default SyncAWSAccount;
-
-
+export default SyncAccountAWS;
 

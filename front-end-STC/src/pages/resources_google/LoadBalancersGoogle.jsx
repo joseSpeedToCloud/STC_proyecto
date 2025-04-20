@@ -1,59 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function LoadBalancersGoogle() {
   const [filter, setFilter] = useState('');
   const [data, setData] = useState([]);
-  const [projectDisplayName, setProjectDisplayName] = useState(''); // Estado para el nombre del proyecto
+  const [projectDisplayName, setProjectDisplayName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadBalancerColumns = [
+    { header: 'ID', accessor: 'load_balancer_id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Project ID', accessor: 'project_id' },
+    { header: 'Region', accessor: 'region' },
+    { header: 'Load Balancing Scheme', accessor: 'load_balancing_scheme' },
+    { header: 'Network Tier', accessor: 'network_tier' },
+    { header: 'Type', accessor: 'type' },
+    { header: 'IP Address', accessor: 'ip_address' },
+    { header: 'Port', accessor: 'port' },
+    { header: 'Status', accessor: 'status' },
+    { header: 'Target', accessor: 'target' },
+    { header: 'Description', accessor: 'description' }
+  ];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const selectedProjectId = sessionStorage.getItem('selectedProject');
         const selectedProjectDisplayName = sessionStorage.getItem("selectedProjectDisplayName");
         
         if (!selectedProjectId) {
-          console.error('No se ha seleccionado un proyecto.');
+          setError('No se ha seleccionado un proyecto.');
+          setLoading(false);
           return;
         }
 
-        setProjectDisplayName(selectedProjectDisplayName); // Establece el nombre del proyecto en el estado
+        setProjectDisplayName(selectedProjectDisplayName);
 
         const result = await fetch(`http://localhost:8080/api/cloud/loadbalancersgoogle?projectId=${selectedProjectId}`);
         const jsonData = await result.json();
         setData(jsonData);
+        setLoading(false);
       } catch (error) {
         console.error('Error al obtener los datos:', error);
+        setError('Error al cargar los datos.');
+        setLoading(false);
       }
     };
     fetchData();
   }, []);
-
-    const exportToCSV = () => {
-      const csvRows = [
-        ['ID', 'Name', 'Project ID', 'Region', 'Load Balancing Scheme', 'Network Tier', 'Type', 'IP Address', 'Port', 'Status', 'Target', 'Description'],
-        ...filteredData.map(item => [
-          item.load_balancer_id, item.name, item.project_id, item.region, item.load_balancing_scheme, item.network_tier, item.type, item.ip_address, item.port, item.status, item.target, item.description || ''
-        ])
-      ];
-        const csvContent = csvRows.map(e => e.join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        saveAs(blob, `Load_Balancers_${projectDisplayName}.csv`);
-      };
-    
-      const exportToPDF = () => {
-        const doc = new jsPDF();
-        doc.text(`Load Balancers del Proyecto: ${projectDisplayName}`, 10, 10);
-        autoTable(doc, {
-          head: [['ID', 'Name', 'Project ID', 'Region', 'Load Balancing Scheme', 'Network Tier', 'Type', 'IP Address', 'Port', 'Status', 'Target', 'Description']],
-          body: filteredData.map(item => [
-            item.load_balancer_id, item.name, item.project_id, item.region, item.load_balancing_scheme, item.network_tier, item.type, item.ip_address, item.port, item.status, item.target, item.description || ''          ]),
-        });
-        doc.save(`Load_Balancers_${projectDisplayName}.pdf`);
-      };
 
   const handleInputChange = (event) => {
     setFilter(event.target.value);
@@ -65,25 +62,45 @@ export default function LoadBalancersGoogle() {
     )
   );
 
+  if (loading) {
+    return (
+      <Sidebar showBackButton={true}>
+        <div className="flex justify-center items-center h-full">
+          <div className="loader border-t-transparent border-blue-400 w-10 h-10 border-4 rounded-full animate-spin"></div>
+        </div>
+      </Sidebar>
+    );
+  }
+
+  if (error) {
+    return (
+      <Sidebar showBackButton={true}>
+        <div className="text-red-500 p-4">{error}</div>
+      </Sidebar>
+    );
+  }
+
   return (
     <Sidebar showBackButton={true}>
       <div className="flex flex-col h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-[#3F9BB9]">
+        <h1 className="text-3xl font-bold mb-6 text-[#3F9BB9]">
           Google Cloud
         </h1>
         <h1 className="text-2xl font-bold mb-6 text-[#3F9BB9]">
           Load Balancers del Proyecto {projectDisplayName}
         </h1>
         <div className="w-full flex flex-col flex-grow">
-          <div className="flex justify-end mb-4 space-x-2">
-            <input
-              placeholder="Filter"
-              className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
-              value={filter}
-              onChange={handleInputChange}
-            />
+          <div className="flex justify-between mb-4">
+            <h1 className="text-2xl ml-6 text-[#3F9BB9]">Load Balancers</h1>
+            <div className="flex items-center space-x-4">
+              <input
+                placeholder="Filter"
+                className="border-2 border-[#ccc] rounded-[5px] px-3 py-2 text-sm text-black"
+                value={filter}
+                onChange={handleInputChange}
+              />
+            </div>
           </div>
-          <h1 className="text-2xl mb-6 ml-6 text-[#3F9BB9]">Load Balancers</h1>
           <table className="min-w-full bg-white rounded-lg">
             <thead>
               <tr className="bg-gray-200 text-[#0B6A8D] font-semibold">
@@ -120,22 +137,18 @@ export default function LoadBalancersGoogle() {
               ))}
             </tbody>
           </table>
-          <div className="mt-6 flex space-x-4">
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-          >
-            Exportar a CSV
-          </button>
-          <button
-            onClick={exportToPDF}
-            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-          >
-            Exportar a PDF
-          </button>
+          <div className="mt-6">
+            <ExportarDatosArchivos
+              data={filteredData}
+              columns={loadBalancerColumns}
+              filename={`Load_Balancers_${projectDisplayName}`}
+              title="Google Cloud Load Balancers"
+              subtitle={`Project: ${projectDisplayName}`}
+            />
+          </div>
         </div>
-        </div>       
       </div>
     </Sidebar>
   );
-};
+}
+

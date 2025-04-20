@@ -5,13 +5,15 @@ import Sidebar from '../components/Sidebar';
 import { Copy } from "lucide-react";
 
 const LoginAWS = () => {
-  const [accessToken, setAccessToken] = useState("");
+  const [accessKeyId, setAccessKeyId] = useState("");
+  const [secretAccessKey, setSecretAccessKey] = useState("");
+  const [sessionToken, setSessionToken] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [showCopied, setShowCopied] = useState(null);
   const navigate = useNavigate();
 
-  // Verifica si el token ya existe al cargar el componente
+  // Check if token already exists when component loads
   useEffect(() => {
     const storedToken = sessionStorage.getItem("awsToken");
     if (storedToken) {
@@ -19,7 +21,7 @@ const LoginAWS = () => {
     }
   }, [navigate]);
 
-  // Función para renovar el token
+  // Function to renew token
   const renewCredentials = useCallback(async () => {
     try {
       const response = await axios.get("http://localhost:8080/api/aws/renew-token-aws");
@@ -30,25 +32,25 @@ const LoginAWS = () => {
         sessionStorage.setItem("awsToken", JSON.stringify(credentials));
         sessionStorage.setItem("awsAccountId", accountId);
 
-        console.log("Credenciales de AWS renovadas exitosamente");
+        console.log("AWS credentials renewed successfully");
         return credentials;
       }
     } catch (error) {
-      console.error("Error renovando credenciales AWS:", error);
+      console.error("Error renewing AWS credentials:", error);
       sessionStorage.removeItem("awsToken");
       sessionStorage.removeItem("awsAccountId");
       navigate({ to: "/LoginAWS" });
     }
   }, [navigate]);
 
-  // Renovación automática del token
+  // Automatic token renewal
   useEffect(() => {
     const storedToken = sessionStorage.getItem("awsToken");
 
     if (storedToken) {
       const renewalInterval = setInterval(async () => {
         await renewCredentials();
-      }, 5 * 60 * 1000); // Renovar cada 5 minutos
+      }, 5 * 60 * 1000); // Renew every 5 minutes
 
       sessionStorage.setItem("credentialRenewalIntervalIdAWS", renewalInterval.toString());
 
@@ -56,7 +58,7 @@ const LoginAWS = () => {
     }
   }, [renewCredentials]);
 
-  // Limpiar intervalo al desmontar el componente
+  // Clear interval when component unmounts
   useEffect(() => {
     return () => {
       const intervalId = sessionStorage.getItem("credentialRenewalIntervalIdAWS");
@@ -67,37 +69,35 @@ const LoginAWS = () => {
     };
   }, []);
 
-  // Función para validar el token
+  // Function to validate the token
   const handleValidateToken = async () => {
     setIsLoading(true);
     setErrorMessage("");
     
     try {
-      // Parsea las credenciales del token ingresado
-      const credentialsObj = JSON.parse(accessToken);
-      
       const response = await axios.post("http://localhost:8080/api/aws/validate-token-aws", {
-        accessKeyId: credentialsObj.accessKeyId,
-        secretAccessKey: credentialsObj.secretAccessKey,
-        sessionToken: credentialsObj.sessionToken
+        accessKeyId,
+        secretAccessKey,
+        sessionToken
       });
 
       if (response.status === 200) {
         const { accountId, email } = response.data;
         
-        // Guarda credenciales y datos de la cuenta
-        sessionStorage.setItem("awsToken", accessToken);
+        // Save credentials and account data
+        const credentials = { accessKeyId, secretAccessKey, sessionToken };
+        sessionStorage.setItem("awsToken", JSON.stringify(credentials));
         sessionStorage.setItem("awsAccountId", accountId);
         sessionStorage.setItem("awsEmail", email);
 
-        // Redirige a la página de sincronización
+        // Redirect to sync page
         navigate({ to: "/SyncAccountAWS" });
       }
     } catch (error) {
-      console.error("Error validando token AWS:", error);
+      console.error("Error validating AWS token:", error);
       setErrorMessage(
-        error.response?.data?.message ||
-        "Credenciales de AWS inválidas o expiradas. Por favor intenta nuevamente."
+        error.response?.data?.error ||
+        "Invalid or expired AWS credentials. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -110,7 +110,7 @@ const LoginAWS = () => {
       setShowCopied(index);
       setTimeout(() => setShowCopied(null), 2000);
     } catch (err) {
-      console.error("Error copiando:", err);
+      console.error("Error copying:", err);
     }
   };
 
@@ -119,15 +119,44 @@ const LoginAWS = () => {
       <div className="relative w-full h-full flex flex-col">
         <div className="flex items-center justify-center flex-1 bg-gray-100 p-4">
           <div className="bg-white shadow-lg rounded-lg p-8 text-center space-y-6 w-[90%] max-w-md">
-            <h1 className="text-xl font-bold">Iniciar sesión con AWS</h1>
+            <h1 className="text-xl font-bold">Sign in with AWS</h1>
             
-            <textarea
-              value={accessToken}
-              onChange={(e) => setAccessToken(e.target.value)}
-              className="w-full px-3 py-2 border rounded min-h-32"
-              placeholder="Pega tu JSON de credenciales AWS aquí"
-              disabled={isLoading}
-            />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Access Key ID</label>
+                <input
+                  type="text"
+                  value={accessKeyId}
+                  onChange={(e) => setAccessKeyId(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Enter your Access Key ID"
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Secret Access Key</label>
+                <input
+                  type="password"
+                  value={secretAccessKey}
+                  onChange={(e) => setSecretAccessKey(e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                  placeholder="Enter your Secret Access Key"
+                  disabled={isLoading}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1 text-left">Session Token</label>
+                <textarea
+                  value={sessionToken}
+                  onChange={(e) => setSessionToken(e.target.value)}
+                  className="w-full px-3 py-2 border rounded min-h-20"
+                  placeholder="Enter your Session Token"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
             
             {isLoading ? (
               <div className="flex justify-center items-center mt-4">
@@ -137,27 +166,27 @@ const LoginAWS = () => {
               <button
                 onClick={handleValidateToken}
                 className="py-2 px-4 rounded bg-blue-500 hover:bg-blue-600 text-white"
-                disabled={!accessToken || isLoading}
+                disabled={!accessKeyId || !secretAccessKey || !sessionToken || isLoading}
               >
-                Validar Credenciales
+                Validate Credentials
               </button>
             )}
 
             <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-md border border-gray-300 space-y-2">
-              <p>Ejecuta los siguientes comandos en tu terminal para obtener credenciales AWS:</p>
+              <p>Run the following commands in your terminal to get AWS credentials:</p>
               <div className="flex items-center justify-center">
                 <strong><code>aws configure</code></strong>
                 <button onClick={() => handleCopy('aws configure', 0)} className="ml-2 relative">
                   <Copy className="w-5 h-5" />
                   {showCopied === 0 && (
                     <span className="absolute top-[-22px] right-[-10px] text-xs text-green-500 transition-opacity duration-300 bg-white px-1 rounded">
-                      Copiado!
+                      Copied!
                     </span>
                   )}
                 </button>
               </div>
               <div className="flex items-center justify-center">
-                <span>para configurar tus credenciales AWS.</span>
+                <span>to configure your AWS credentials.</span>
               </div>
               <div className="flex items-center justify-center">
                 <strong><code>aws sts get-session-token --output json</code></strong>
@@ -165,23 +194,13 @@ const LoginAWS = () => {
                   <Copy className="w-5 h-5" />
                   {showCopied === 1 && (
                     <span className="absolute top-[-22px] right-[-10px] text-xs text-green-500 transition-opacity duration-300 bg-white px-1 rounded">
-                      Copiado!
+                      Copied!
                     </span>
                   )}
                 </button>
               </div>
               <div className="flex items-center justify-center">
-                <span>Copia el objeto JSON completo de la respuesta.</span>
-              </div>
-              <div className="mt-2 p-2 bg-gray-200 rounded text-xs">
-                <p>Ejemplo de formato JSON:</p>
-                <pre className="text-left">
-{`{
-  "accessKeyId": "ASIA...",
-  "secretAccessKey": "Tu+Clave+Secreta",
-  "sessionToken": "Token+De+Sesión+Muy+Largo..."
-}`}
-                </pre>
+                <span>Copy the values from the JSON response.</span>
               </div>
             </div>
             

@@ -3,9 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
 import googleLogo from '../../assets/google.svg';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { saveAs } from 'file-saver';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 const HomeGoogle = () => {
   const [extractedProjects, setExtractedProjects] = useState([]);
@@ -13,6 +11,12 @@ const HomeGoogle = () => {
   const [error, setError] = useState(null);
   const [needsSync, setNeedsSync] = useState(false);
   const navigate = useNavigate();
+
+  const projectColumns = [
+    { header: 'Project ID', accessor: 'id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Organization', accessor: (item) => item.organization?.name || 'No organization' }
+  ];
 
   useEffect(() => {
     // Check authentication and sync status
@@ -39,17 +43,17 @@ const HomeGoogle = () => {
           "http://localhost:8080/api/cloud/validate-token",
           { token }
         );
-        
+
         // Fetch projects
         const response = await axios.get('http://localhost:8080/api/cloud/projectsgoogle', {
           headers: { 'Authorization': `Bearer ${token}` },
         });
-        
+
         setExtractedProjects(response.data);
         setLoading(false);
       } catch (err) {
         console.error('Authentication or fetch error:', err);
-        
+
         // If token validation fails, clear session and redirect to login
         if (err.response?.status === 401) {
           sessionStorage.removeItem('gcpAccessToken');
@@ -59,7 +63,7 @@ const HomeGoogle = () => {
           setLoading(false);
           return;
         }
-        
+
         setError('Error fetching projects. Please try again.');
         setLoading(false);
       }
@@ -74,46 +78,6 @@ const HomeGoogle = () => {
     sessionStorage.setItem('selectedProject', project.id);
     sessionStorage.setItem('selectedProjectDisplayName', project.display_name || project.name);
     navigate({ to: '/projectsDetails' });
-  };
-
-  // Función para exportar a CSV
-  const exportToCSV = () => {
-    const headers = [
-      'Project ID',
-      'Name',
-      'Organization'
-    ];
-
-    const csvRows = [
-      headers,
-      ...extractedProjects.map(project => [
-        project.id,
-        project.name,
-        project.organization?.name || 'No organization'
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `Google_Cloud_Projects_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Función para exportar a PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    
-    doc.text('Google Cloud Projects List', 10, 10);
-    
-    autoTable(doc, {
-      head: [['Project ID', 'Name', 'Organization']],
-      body: extractedProjects.map(project => [
-        project.id,
-        project.name,
-        project.organization?.name || 'No organization'
-      ]),
-    });
-    
-    doc.save(`Google_Cloud_Projects_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   if (loading) {
@@ -174,20 +138,12 @@ const HomeGoogle = () => {
           <h1 className="text-2xl font-bold text-[#4285F4]">Google Cloud Projects</h1>
           
           {extractedProjects.length > 0 && (
-            <div className="flex space-x-4">
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
-            </div>
+            <ExportarDatosArchivos
+              data={extractedProjects}
+              columns={projectColumns}
+              filename="Google_Cloud_Projects"
+              title="Google Cloud Projects"
+            />
           )}
         </div>
         
@@ -247,3 +203,4 @@ const HomeGoogle = () => {
 };
 
 export default HomeGoogle;
+

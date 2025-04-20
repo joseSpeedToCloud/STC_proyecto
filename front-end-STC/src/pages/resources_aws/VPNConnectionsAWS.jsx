@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../../components/Sidebar';
-import ExportarDatosArchivos from '../../components/ExportarDatosArchivos';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 export default function VPNConnectionsAWS() {
   const [filter, setFilter] = useState('');

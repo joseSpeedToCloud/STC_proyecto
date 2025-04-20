@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import ExportarDatosArchivos from '../../components/export_datos_archivos';
 
 const SubscriptionsAzure = () => {
   const [subscriptions, setSubscriptions] = useState([]);
@@ -54,49 +52,16 @@ const SubscriptionsAzure = () => {
     (sub.displayName && sub.displayName.toLowerCase().includes(filter.toLowerCase()))
   );
 
-  // Función para exportar a CSV
-  const exportToCSV = () => {
-    const headers = ['ID', 'Name', 'Display Name', 'Organization'];
-    const csvRows = [
-      headers,
-      ...filteredSubscriptions.map(sub => [
-        sub.id,
-        sub.name,
-        sub.displayName || 'N/A',
-        sub.directory?.name || 'N/A'
-      ])
-    ];
-
-    const csvContent = csvRows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `Azure_Subscriptions_${new Date().toISOString().split('T')[0]}.csv`);
-  };
-
-  // Función para exportar a PDF
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text('Azure Subscriptions', 14, 15);
-
-    doc.autoTable({
-      head: [['ID', 'Name', 'Display Name', 'Organization']],
-      body: filteredSubscriptions.map(sub => [
-        sub.id,
-        sub.name,
-        sub.displayName || 'N/A',
-        sub.directory?.name || 'N/A'
-      ]),
-      startY: 20,
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: {
-        0: { cellWidth: 40 }
-      },
-      didDrawPage: (data) => {
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 10);
-      }
-    });
-
-    doc.save(`Azure_Subscriptions_${new Date().toISOString().split('T')[0]}.pdf`);
-  };
+  // Define columns for export
+  const exportColumns = [
+    { header: 'ID', accessor: 'id' },
+    { header: 'Name', accessor: 'name' },
+    { header: 'Display Name', accessor: 'displayName', 
+      // Handle cases where displayName might be null
+      accessor: (item) => item.displayName || 'N/A' 
+    },
+    { header: 'Organization', accessor: (item) => item.directory?.name || 'N/A' }
+  ];
 
   if (loading) {
     return (
@@ -129,18 +94,12 @@ const SubscriptionsAzure = () => {
                 value={filter}
                 onChange={handleFilterChange}
               />
-              <button
-                onClick={exportToCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={exportToPDF}
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-700"
-              >
-                Export PDF
-              </button>
+              <ExportarDatosArchivos
+                data={filteredSubscriptions}
+                columns={exportColumns}
+                filename="Azure_Subscriptions"
+                title="Azure Subscriptions"
+              />
             </div>
           </div>
           
@@ -181,4 +140,3 @@ const SubscriptionsAzure = () => {
 };
 
 export default SubscriptionsAzure;
-
